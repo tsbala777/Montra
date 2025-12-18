@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { View, Transaction, Category, Budget, SavingsGoal, UserSettings } from './types';
 import { NAV_ITEMS } from './constants';
 import { Dashboard } from './pages/Dashboard';
@@ -448,6 +449,7 @@ const App = () => {
   return (
     <AuthProvider>
       <AppContent />
+      <Analytics />
     </AuthProvider>
   );
 };

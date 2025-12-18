@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { View, Transaction, Category, Budget, SavingsGoal, UserSettings } from './types';
 import { NAV_ITEMS } from './constants';
 import { Dashboard } from './pages/Dashboard';
@@ -450,6 +451,7 @@ const App = () => {
     <AuthProvider>
       <AppContent />
       <Analytics />
+      <SpeedInsights />
     </AuthProvider>
   );
 };

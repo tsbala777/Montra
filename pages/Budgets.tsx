@@ -3,7 +3,8 @@ import React, { useMemo, useState } from 'react';
 import { Transaction, Category, Budget } from '../types';
 import { GlassCard, GlassButton, GlassInput, GlassSelect } from '../components/ui/Glass';
 import { CATEGORY_ICONS, CATEGORY_COLORS } from '../constants';
-import { Plus, Pencil, Trash2, PiggyBank, Sparkles, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, PiggyBank, Sparkles, AlertTriangle, CheckCircle2, TrendingUp } from 'lucide-react';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid } from 'recharts';
 
 interface Props {
   transactions: Transaction[];
@@ -12,6 +13,21 @@ interface Props {
   onDeleteBudget: (category: Category) => void;
   currency: string;
 }
+
+const CustomTooltip = ({ active, payload, label, currency }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/60 dark:border-white/10 p-3 rounded-xl shadow-xl">
+        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-sm font-bold text-slate-800 dark:text-white">
+          <span className="text-indigo-500 mr-1">●</span>
+          {currency}{payload[0].value.toFixed(2)} Spent
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, onDeleteBudget, currency }) => {
   const [isAdding, setIsAdding] = useState(false);
@@ -23,21 +39,60 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
   const INCOME_CATEGORIES = [Category.INCOME, Category.INCOME_SOURCE, Category.SCHOLARSHIP, Category.GIFT];
 
   // Calculate actual spending per category for current month
-  const spendingByCategory = useMemo(() => {
+  const spendingData = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
-    return transactions
-      .filter(t => {
-        const d = new Date(t.date);
-        return t.type === 'expense' && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-      })
-      .reduce((acc, t) => {
-        acc[t.category] = (acc[t.category] || 0) + t.amount;
-        return acc;
-      }, {} as Record<string, number>);
-  }, [transactions]);
+    // 1. Spending by Category
+    const byCategory: Record<string, number> = {};
+    
+    // 2. Daily Trend Data
+    // Get all transactions that fall into budgeted categories
+    const relevantTransactions = transactions.filter(t => {
+      const d = new Date(t.date);
+      const isBudgeted = budgets.some(b => b.category === t.category);
+      return t.type === 'expense' && d.getMonth() === currentMonth && d.getFullYear() === currentYear && isBudgeted;
+    });
+
+    // Populate byCategory map
+    transactions.forEach(t => {
+       const d = new Date(t.date);
+       if (t.type === 'expense' && d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+         byCategory[t.category] = (byCategory[t.category] || 0) + t.amount;
+       }
+    });
+
+    // Build Chart Data (Cumulative Daily)
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const chartData = [];
+    let runningTotal = 0;
+    const today = now.getDate(); // Only plot up to today
+    
+    for (let day = 1; day <= today; day++) {
+      const daySpending = relevantTransactions
+        .filter(t => new Date(t.date).getDate() === day)
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      runningTotal += daySpending;
+      
+      chartData.push({
+        day: day,
+        label: new Date(currentYear, currentMonth, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        spent: runningTotal
+      });
+    }
+
+    const totalBudgetLimit = budgets.reduce((sum, b) => sum + b.limit, 0);
+    const totalSpentBudgeted = relevantTransactions.reduce((sum, t) => sum + t.amount, 0);
+
+    return { 
+      byCategory, 
+      chartData, 
+      totalBudgetLimit,
+      totalSpentBudgeted
+    };
+  }, [transactions, budgets]);
 
   const handleSave = () => {
     if (!limit || parseFloat(limit) <= 0) return;
@@ -73,7 +128,7 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
       </div>
 
       {isAdding && (
-        <GlassCard className="animate-slide-up border-indigo-100 dark:border-indigo-500/20 bg-white/90 dark:bg-slate-900/90 shadow-xl">
+        <GlassCard className="animate-slide-up border-indigo-100 dark:border-indigo-500/20 bg-white/90 dark:bg-slate-900/90 shadow-xl relative z-20">
           <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white">{editingCategory ? `Edit ${editingCategory} Budget` : 'Create New Budget'}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {!editingCategory && (
@@ -112,6 +167,63 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
         </GlassCard>
       )}
 
+      {budgets.length > 0 && spendingData.chartData.length > 0 && (
+        <GlassCard className="p-6 relative overflow-hidden group">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+               <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                 <TrendingUp size={20} className="text-indigo-500" />
+                 Spending Trend
+               </h3>
+               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+                 Cumulative spending for budgeted categories this month.
+               </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">Total Budget</p>
+              <p className="text-xl font-black text-slate-900 dark:text-white">{currency}{spendingData.totalBudgetLimit.toLocaleString()}</p>
+            </div>
+          </div>
+          
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={spendingData.chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorSpent" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
+                <XAxis 
+                  dataKey="label" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fontSize: 10, fill: '#94a3b8'}} 
+                  minTickGap={30}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fontSize: 10, fill: '#94a3b8'}} 
+                />
+                <Tooltip content={<CustomTooltip currency={currency} />} />
+                <ReferenceLine y={spendingData.totalBudgetLimit} stroke="#10b981" strokeDasharray="3 3" label={{ position: 'top', value: 'Limit', fill: '#10b981', fontSize: 10, fontWeight: 'bold' }} />
+                <Area 
+                  type="monotone" 
+                  dataKey="spent" 
+                  stroke="#6366f1" 
+                  strokeWidth={3} 
+                  fillOpacity={1} 
+                  fill="url(#colorSpent)" 
+                  animationDuration={1500}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </GlassCard>
+      )}
+
       {budgets.length === 0 && !isAdding ? (
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center animate-fade-in">
           <div className="relative mb-8">
@@ -135,7 +247,7 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {budgets.map((budget) => {
-            const spent = spendingByCategory[budget.category] || 0;
+            const spent = spendingData.byCategory[budget.category] || 0;
             const remaining = budget.limit - spent;
             const rawPercentage = (spent / budget.limit) * 100;
             const widthPercentage = Math.min(rawPercentage, 100);

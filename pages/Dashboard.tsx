@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, LabelList } from 'recharts';
-import { Transaction, Category } from '../types';
+import { Transaction, Category, Budget, SavingsGoal, UserProfile } from '../types';
 import { GlassCard, GlassButton } from '../components/ui/Glass';
 import { CATEGORY_ICONS, CATEGORY_COLORS } from '../constants';
 import { getFinancialInsight } from '../services/geminiService';
@@ -9,9 +9,10 @@ import { Sparkles, TrendingUp, TrendingDown, ArrowUpRight } from 'lucide-react';
 
 interface Props {
   transactions: Transaction[];
+  budgets: Budget[];
+  goals: SavingsGoal[];
+  profile: UserProfile;
   onAddTransaction: () => void;
-  studentName?: string;
-  studentSchool?: string;
   currency: string;
   isDarkMode: boolean;
 }
@@ -89,7 +90,7 @@ const CustomDataLabel = (props: any) => {
   );
 };
 
-export const Dashboard: React.FC<Props> = ({ transactions, onAddTransaction, studentName, studentSchool, currency, isDarkMode }) => {
+export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profile, onAddTransaction, currency, isDarkMode }) => {
   const [insight, setInsight] = useState<string>('');
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [hoveredData, setHoveredData] = useState<any>(null);
@@ -102,11 +103,13 @@ export const Dashboard: React.FC<Props> = ({ transactions, onAddTransaction, stu
   useEffect(() => {
     if (transactions.length > 0) {
       setIsLoadingInsight(true);
-      getFinancialInsight(transactions)
+      // Pass the full context to Gemini
+      getFinancialInsight(transactions, budgets, goals, profile)
         .then(setInsight)
+        .catch(() => setInsight("Could not load insight."))
         .finally(() => setIsLoadingInsight(false));
     }
-  }, [transactions.length]);
+  }, [transactions, budgets, goals, profile]);
 
   const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
   const expenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
@@ -152,12 +155,12 @@ export const Dashboard: React.FC<Props> = ({ transactions, onAddTransaction, stu
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-1">
-            Good Morning{studentName ? `, ${studentName.split(' ')[0]}` : ''}
+            Good Morning{profile.name ? `, ${profile.name.split(' ')[0]}` : ''}
           </h1>
           <div className="flex items-center gap-2 text-sm md:text-base text-slate-500 dark:text-slate-400 font-light">
-             {studentSchool && (
+             {profile.school && (
                <>
-                 <span className="font-semibold text-slate-700 dark:text-slate-300">{studentSchool}</span>
+                 <span className="font-semibold text-slate-700 dark:text-slate-300">{profile.school}</span>
                  <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
                </>
              )}
@@ -179,7 +182,7 @@ export const Dashboard: React.FC<Props> = ({ transactions, onAddTransaction, stu
                Montra AI Insight
              </h3>
              <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed font-medium">
-               {isLoadingInsight ? <span className="animate-pulse">Analyzing habits...</span> : insight || "Add data for insights!"}
+               {isLoadingInsight ? <span className="animate-pulse">Analyzing spending habits...</span> : insight || "Add data for insights!"}
              </p>
            </div>
         </div>

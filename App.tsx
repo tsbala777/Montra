@@ -225,7 +225,17 @@ const App = () => {
 
     switch(currentView) {
       case 'dashboard':
-        return <Dashboard transactions={transactions} onAddTransaction={() => setModalOpen(true)} studentName={settings.profile.name} studentSchool={settings.profile.school} currency={settings.currency} isDarkMode={settings.isDarkMode} />;
+        return (
+          <Dashboard 
+            transactions={transactions} 
+            budgets={budgets}
+            goals={goals}
+            profile={settings.profile}
+            onAddTransaction={() => setModalOpen(true)} 
+            currency={settings.currency} 
+            isDarkMode={settings.isDarkMode} 
+          />
+        );
       case 'transactions':
         return <TransactionsList transactions={transactions} onDelete={deleteTransaction} currency={settings.currency} />;
       case 'budgets':
@@ -258,7 +268,17 @@ const App = () => {
           />
         );
       default:
-        return <Dashboard transactions={transactions} onAddTransaction={() => setModalOpen(true)} studentName={settings.profile.name} studentSchool={settings.profile.school} currency={settings.currency} isDarkMode={settings.isDarkMode} />;
+        return (
+          <Dashboard 
+            transactions={transactions} 
+            budgets={budgets}
+            goals={goals}
+            profile={settings.profile}
+            onAddTransaction={() => setModalOpen(true)} 
+            currency={settings.currency} 
+            isDarkMode={settings.isDarkMode} 
+          />
+        );
     }
   };
 

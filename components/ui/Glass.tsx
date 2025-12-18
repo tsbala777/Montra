@@ -1,5 +1,6 @@
 
-import React, { ButtonHTMLAttributes, InputHTMLAttributes, SelectHTMLAttributes } from 'react';
+import React, { ButtonHTMLAttributes, InputHTMLAttributes, useState, useRef, useEffect } from 'react';
+import { ChevronDown, Check } from 'lucide-react';
 
 interface GlassCardProps {
   children: React.ReactNode;
@@ -39,14 +40,101 @@ export const GlassInput: React.FC<InputHTMLAttributes<HTMLInputElement>> = ({ cl
   />
 );
 
-export const GlassSelect: React.FC<SelectHTMLAttributes<HTMLSelectElement>> = ({ className = '', ...props }) => (
-    <div className="relative">
-      <select 
-        className={`w-full appearance-none bg-white/40 dark:bg-slate-900/60 border border-slate-200/60 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-indigo-500/20 focus:border-slate-400 dark:focus:border-indigo-500/50 transition-all text-slate-700 dark:text-slate-200 ${className}`}
-        {...props}
-      />
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+interface GlassSelectProps {
+  className?: string;
+  children: React.ReactNode;
+  value?: string | number | undefined;
+  onChange?: (e: { target: { value: string } }) => void;
+  placeholder?: string;
+}
+
+export const GlassSelect: React.FC<GlassSelectProps> = ({ className = '', children, value, onChange, placeholder = 'Select...', ...props }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Extract options data from children
+  const options = React.Children.toArray(children).map((child: any) => {
+    if (child?.props) {
+        return {
+          value: child.props.value,
+          label: child.props.children,
+          className: child.props.className
+        };
+    }
+    return null;
+  }).filter(Boolean);
+
+  const selectedOption = options.find(opt => String(opt?.value) === String(value));
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelect = (optionValue: string) => {
+    if (onChange) {
+      onChange({ target: { value: optionValue } });
+    }
+    setIsOpen(false);
+  };
+
+  return (
+    <div className={`relative ${className}`} ref={containerRef} {...props}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between bg-white/40 dark:bg-slate-900/60 border border-slate-200/60 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-indigo-500/20 transition-all text-slate-700 dark:text-slate-200 ${isOpen ? 'ring-2 ring-indigo-500/20 border-indigo-500/50 bg-white/60 dark:bg-slate-800/80' : 'hover:bg-white/60 dark:hover:bg-slate-800/40'}`}
+      >
+        <span className={`truncate mr-2 font-medium ${!selectedOption ? 'text-slate-400 dark:text-slate-500' : ''}`}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <ChevronDown 
+          size={16} 
+          className={`text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} 
+        />
+      </button>
+
+      {/* Modern Glass Dropdown */}
+      <div 
+        className={`
+          absolute z-50 mt-2 w-full min-w-[120px] left-0
+          bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl 
+          border border-slate-200/60 dark:border-white/10 
+          rounded-xl shadow-xl dark:shadow-black/50 
+          overflow-hidden origin-top
+          transition-all duration-200 ease-ios-spring
+          ${isOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}
+        `}
+      >
+        <div className="max-h-60 overflow-y-auto custom-scrollbar p-1.5 space-y-0.5">
+          {options.map((opt: any) => {
+             const isSelected = String(opt.value) === String(value);
+             return (
+               <button
+                 key={opt.value}
+                 type="button"
+                 onClick={() => handleSelect(opt.value)}
+                 className={`
+                   w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors text-left group
+                   ${isSelected 
+                     ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-bold' 
+                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5'
+                   }
+                   ${opt.className || ''}
+                 `}
+               >
+                 <span className="truncate">{opt.label}</span>
+                 {isSelected && <Check size={14} className="shrink-0 ml-2 animate-scale-in" />}
+               </button>
+             )
+          })}
+        </div>
       </div>
     </div>
-);
+  );
+};

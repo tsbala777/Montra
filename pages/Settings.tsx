@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { UserSettings } from '../types';
 import { GlassCard, GlassButton, GlassInput, GlassSelect } from '../components/ui/Glass';
-import { User, Globe, Palette, Database, Download, Trash2, ShieldCheck, Github, Moon, Sun } from 'lucide-react';
+import { User, Globe, Palette, Database, Download, Trash2, ShieldCheck, Github, Moon, Sun, GraduationCap } from 'lucide-react';
 
 interface Props {
   settings: UserSettings;
@@ -42,7 +42,7 @@ export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetD
   return (
     <div className="space-y-6 animate-fade-in pb-24 md:pb-0">
       <header>
-        <h1 className="text-2xl font-light text-slate-900 dark:text-white">Settings</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Settings</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">Personalize your Montra experience.</p>
       </header>
 
@@ -66,19 +66,27 @@ export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetD
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Full Name</label>
-                <GlassInput 
-                  value={settings.profile.name} 
-                  onChange={(e) => handleProfileChange('name', e.target.value)}
-                  placeholder="Your name"
-                />
+                <div className="relative">
+                   <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
+                   <GlassInput 
+                    value={settings.profile.name} 
+                    onChange={(e) => handleProfileChange('name', e.target.value)}
+                    placeholder="Your name"
+                    className="pl-10"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">University</label>
-                <GlassInput 
-                  value={settings.profile.school} 
-                  onChange={(e) => handleProfileChange('school', e.target.value)}
-                  placeholder="e.g. Stanford University"
-                />
+                <div className="relative">
+                   <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
+                   <GlassInput 
+                    value={settings.profile.school} 
+                    onChange={(e) => handleProfileChange('school', e.target.value)}
+                    placeholder="e.g. Stanford"
+                    className="pl-10"
+                   />
+                </div>
               </div>
             </div>
           </GlassCard>
@@ -87,7 +95,7 @@ export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetD
             <Globe size={16} />
             <h3 className="text-xs font-bold uppercase tracking-widest">Localization</h3>
           </div>
-          <GlassCard>
+          <GlassCard className="relative z-20">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h4 className="text-sm font-medium text-slate-800 dark:text-white">Primary Currency</h4>

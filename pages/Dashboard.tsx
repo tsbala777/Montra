@@ -11,7 +11,9 @@ interface Props {
   transactions: Transaction[];
   onAddTransaction: () => void;
   studentName?: string;
+  studentSchool?: string;
   currency: string;
+  isDarkMode: boolean;
 }
 
 const CustomTooltip = ({ active, payload, currency }: any) => {
@@ -20,7 +22,7 @@ const CustomTooltip = ({ active, payload, currency }: any) => {
     const breakdownEntries = Object.entries(data.breakdown || {}) as [Category, number][];
     
     return (
-      <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/60 dark:border-white/10 p-4 rounded-2xl shadow-2xl min-w-[210px] animate-fade-in z-50 ring-1 ring-slate-900/5">
+      <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/60 dark:border-white/10 p-4 rounded-2xl shadow-2xl dark:shadow-black/50 min-w-[210px] animate-fade-in z-50 ring-1 ring-slate-900/5">
         <div className="flex justify-between items-center mb-2 border-b border-slate-100 dark:border-white/5 pb-2">
           <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{data.fullDateLabel}</p>
         </div>
@@ -87,10 +89,15 @@ const CustomDataLabel = (props: any) => {
   );
 };
 
-export const Dashboard: React.FC<Props> = ({ transactions, onAddTransaction, studentName, currency }) => {
+export const Dashboard: React.FC<Props> = ({ transactions, onAddTransaction, studentName, studentSchool, currency, isDarkMode }) => {
   const [insight, setInsight] = useState<string>('');
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [hoveredData, setHoveredData] = useState<any>(null);
+
+  // Define dynamic colors based on theme
+  const chartColor = isDarkMode ? '#818cf8' : '#6366f1'; // Indigo 400 for dark, Indigo 500 for light
+  const axisColor = isDarkMode ? '#94a3b8' : '#94a3b8'; // Slate 400 works well for both, but could use #64748b (slate 500) for light
+  const dotStrokeColor = isDarkMode ? '#0f172a' : '#fff'; // Slate 900 (bg) for dark mode cutout effect, White for light
 
   useEffect(() => {
     if (transactions.length > 0) {
@@ -141,15 +148,23 @@ export const Dashboard: React.FC<Props> = ({ transactions, onAddTransaction, stu
   const totalInContext = hoveredData ? hoveredData.amount : expenses;
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20 md:pb-0">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-light text-slate-900 dark:text-white tracking-tight mb-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-1">
             Good Morning{studentName ? `, ${studentName.split(' ')[0]}` : ''}
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-light">Here's your financial overview for the week.</p>
+          <div className="flex items-center gap-2 text-sm md:text-base text-slate-500 dark:text-slate-400 font-light">
+             {studentSchool && (
+               <>
+                 <span className="font-semibold text-slate-700 dark:text-slate-300">{studentSchool}</span>
+                 <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+               </>
+             )}
+             <span>Financial overview</span>
+          </div>
         </div>
-        <GlassButton onClick={onAddTransaction} className="shadow-emerald-100 dark:shadow-emerald-900/10">
+        <GlassButton onClick={onAddTransaction} className="shadow-emerald-100 dark:shadow-emerald-900/10 w-full md:w-auto">
           + Quick Add
         </GlassButton>
       </div>
@@ -170,7 +185,7 @@ export const Dashboard: React.FC<Props> = ({ transactions, onAddTransaction, stu
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <GlassCard hoverEffect className="relative overflow-hidden group">
           <div className="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 dark:text-white transition-opacity"><TrendingUp size={80} /></div>
           <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">Total Balance</p>
@@ -195,22 +210,24 @@ export const Dashboard: React.FC<Props> = ({ transactions, onAddTransaction, stu
             Weekly Activity
             {hoveredData && <span className="text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full animate-pulse">Inspecting {hoveredData.date}</span>}
           </h3>
-          <div className="flex-1 w-full min-h-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 50, right: 20, left: 10, bottom: 0 }} onMouseMove={(e: any) => e?.activePayload && setHoveredData(e.activePayload[0].payload)} onMouseLeave={() => setHoveredData(null)}>
-                <defs>
-                  <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8', fontWeight: 500}} dy={10} />
-                <YAxis hide domain={[0, (dataMax: number) => (dataMax === 0 ? 100 : dataMax * 1.6)]} />
-                <Tooltip content={<CustomTooltip currency={currency} />} cursor={{ stroke: '#6366f1', strokeOpacity: 0.15, strokeWidth: 2 }} />
-                <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#colorAmount)" activeDot={{ r: 6, strokeWidth: 3, stroke: '#fff', fill: '#6366f1', className: 'shadow-lg' }} isAnimationActive={true} animationDuration={1200}>
-                  <LabelList dataKey="amount" content={<CustomDataLabel currency={currency} />} />
-                </Area>
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="flex-1 w-full min-h-0 relative">
+            <div className="absolute inset-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 50, right: 20, left: 10, bottom: 0 }} onMouseMove={(e: any) => e?.activePayload && setHoveredData(e.activePayload[0].payload)} onMouseLeave={() => setHoveredData(null)}>
+                  <defs>
+                    <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={chartColor} stopOpacity={0.25}/><stop offset="95%" stopColor={chartColor} stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: axisColor, fontWeight: 500}} dy={10} />
+                  <YAxis hide domain={[0, (dataMax: number) => (dataMax === 0 ? 100 : dataMax * 1.6)]} />
+                  <Tooltip content={<CustomTooltip currency={currency} />} cursor={{ stroke: chartColor, strokeOpacity: 0.15, strokeWidth: 2 }} />
+                  <Area type="monotone" dataKey="amount" stroke={chartColor} strokeWidth={2.5} fillOpacity={1} fill="url(#colorAmount)" activeDot={{ r: 6, strokeWidth: 3, stroke: dotStrokeColor, fill: chartColor, className: 'shadow-lg' }} isAnimationActive={true} animationDuration={1200}>
+                    <LabelList dataKey="amount" content={<CustomDataLabel currency={currency} />} />
+                  </Area>
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </GlassCard>
 

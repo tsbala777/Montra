@@ -39,16 +39,17 @@ export const Goals: React.FC<Props> = ({ goals, onAddGoal, onUpdateGoal, onDelet
   };
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20 md:pb-0">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-light text-slate-900 dark:text-white">Savings Goals</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Savings Goals</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">Big things start with small savings.</p>
         </div>
         {!isAdding && goals.length > 0 && (
           <GlassButton onClick={() => setIsAdding(true)}>
             <Plus size={18} />
-            New Goal
+            <span className="hidden md:inline">New Goal</span>
+            <span className="md:hidden">New</span>
           </GlassButton>
         )}
       </div>
@@ -87,10 +88,10 @@ export const Goals: React.FC<Props> = ({ goals, onAddGoal, onUpdateGoal, onDelet
           <div className="relative mb-8">
             <div className="absolute inset-0 bg-purple-500/10 blur-3xl rounded-full" />
             <div className="relative flex gap-4">
-              <div className="bg-white dark:bg-slate-900 glass-panel p-6 rounded-3xl shadow-xl animate-float" style={{ animationDelay: '0s' }}>
+              <div className="bg-white dark:bg-slate-800 glass-panel p-6 rounded-3xl shadow-xl animate-float border-white/50 dark:border-white/5" style={{ animationDelay: '0s' }}>
                 <Rocket className="w-10 h-10 text-indigo-500" strokeWidth={1.5} />
               </div>
-              <div className="bg-white dark:bg-slate-900 glass-panel p-6 rounded-3xl shadow-xl animate-float mt-8" style={{ animationDelay: '1.5s' }}>
+              <div className="bg-white dark:bg-slate-800 glass-panel p-6 rounded-3xl shadow-xl animate-float mt-8 border-white/50 dark:border-white/5" style={{ animationDelay: '1.5s' }}>
                 <Compass className="w-10 h-10 text-purple-500" strokeWidth={1.5} />
               </div>
             </div>
@@ -99,7 +100,7 @@ export const Goals: React.FC<Props> = ({ goals, onAddGoal, onUpdateGoal, onDelet
           <p className="text-slate-500 dark:text-slate-400 max-w-sm mb-8 leading-relaxed">
             What are you dreaming of? A new laptop, a spring break trip, or just an emergency fund? Start small, dream big.
           </p>
-          <GlassButton onClick={() => setIsAdding(true)} className="px-8 py-4 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 shadow-indigo-100 scale-105 hover:scale-110 active:scale-95 transition-all border-none">
+          <GlassButton onClick={() => setIsAdding(true)} className="px-8 py-4 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 shadow-indigo-100 dark:shadow-none scale-105 hover:scale-110 active:scale-95 transition-all border-none text-white">
             <Plus size={20} className="mr-1" />
             Start Your Savings Journey
           </GlassButton>
@@ -116,11 +117,11 @@ export const Goals: React.FC<Props> = ({ goals, onAddGoal, onUpdateGoal, onDelet
                 <div>
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 text-2xl flex items-center justify-center shadow-inner">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/20 text-2xl flex items-center justify-center shadow-inner dark:shadow-none shrink-0">
                         {goal.icon}
                       </div>
-                      <div>
-                        <h4 className="font-semibold text-slate-800 dark:text-white text-lg leading-tight">{goal.name}</h4>
+                      <div className="min-w-0">
+                        <h4 className="font-semibold text-slate-800 dark:text-white text-lg leading-tight truncate">{goal.name}</h4>
                         <p className="text-xs text-slate-400 dark:text-slate-500 font-medium uppercase tracking-tighter">
                           {isCompleted ? 'Goal Reached!' : `${currency}${remaining.toFixed(0)} to go`}
                         </p>
@@ -128,7 +129,7 @@ export const Goals: React.FC<Props> = ({ goals, onAddGoal, onUpdateGoal, onDelet
                     </div>
                     <button 
                       onClick={() => onDeleteGoal(goal.id)}
-                      className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                      className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-100 md:opacity-0 group-hover:opacity-100"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -139,7 +140,7 @@ export const Goals: React.FC<Props> = ({ goals, onAddGoal, onUpdateGoal, onDelet
                       <span className="font-bold text-slate-700 dark:text-slate-200">{currency}{goal.currentAmount.toLocaleString()}</span>
                       <span className="text-slate-400 dark:text-slate-500">of {currency}{goal.targetAmount.toLocaleString()}</span>
                     </div>
-                    <div className="h-3 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden shadow-inner p-0.5">
+                    <div className="h-3 w-full bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden shadow-inner p-0.5">
                       <div 
                         className={`h-full rounded-full transition-all duration-1000 ease-out ${
                           isCompleted 
@@ -158,7 +159,7 @@ export const Goals: React.FC<Props> = ({ goals, onAddGoal, onUpdateGoal, onDelet
                     <input 
                       type="number"
                       placeholder="Add..."
-                      className="w-full bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-white/10 rounded-xl pl-6 pr-3 py-2 text-xs outline-none focus:ring-1 focus:ring-indigo-500/30 transition-all text-slate-800 dark:text-slate-200"
+                      className="w-full bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-white/10 rounded-xl pl-6 pr-3 py-2 text-xs outline-none focus:ring-1 focus:ring-indigo-500/30 transition-all text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600"
                       value={contribution[goal.id] || ''}
                       onChange={(e) => setContribution({ ...contribution, [goal.id]: e.target.value })}
                     />
@@ -168,7 +169,7 @@ export const Goals: React.FC<Props> = ({ goals, onAddGoal, onUpdateGoal, onDelet
                     disabled={isCompleted}
                     className={`p-2 rounded-xl transition-all flex items-center justify-center ${
                       isCompleted 
-                        ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 cursor-default' 
+                        ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 cursor-default' 
                         : 'bg-slate-900 dark:bg-indigo-600 text-white hover:bg-slate-800 dark:hover:bg-indigo-700 active:scale-95'
                     }`}
                   >

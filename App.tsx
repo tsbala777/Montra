@@ -25,10 +25,10 @@ const DEFAULT_SETTINGS: UserSettings = {
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('montra_auth') === 'true';
+    return localStorage.getItem('montra_auth') === 'true' || sessionStorage.getItem('montra_auth') === 'true';
   });
   const [currentView, setCurrentView] = useState<View>(() => {
-    const auth = localStorage.getItem('montra_auth') === 'true';
+    const auth = localStorage.getItem('montra_auth') === 'true' || sessionStorage.getItem('montra_auth') === 'true';
     return auth ? 'dashboard' : 'login';
   });
   const [isModalOpen, setModalOpen] = useState(false);
@@ -82,21 +82,26 @@ const App = () => {
     localStorage.setItem('montra_settings', JSON.stringify(settings));
   }, [settings]);
 
-  useEffect(() => {
-    localStorage.setItem('montra_auth', isAuthenticated.toString());
-  }, [isAuthenticated]);
-
-  const handleLogin = (name: string) => {
+  const handleLogin = (name: string, rememberMe: boolean) => {
     setIsAuthenticated(true);
     setSettings(prev => ({
       ...prev,
       profile: { ...prev.profile, name }
     }));
+    
+    if (rememberMe) {
+      localStorage.setItem('montra_auth', 'true');
+    } else {
+      sessionStorage.setItem('montra_auth', 'true');
+    }
+    
     setCurrentView('dashboard');
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    localStorage.removeItem('montra_auth');
+    sessionStorage.removeItem('montra_auth');
     setCurrentView('login');
   };
 
@@ -146,8 +151,13 @@ const App = () => {
     setGoals([]);
     setSettings(DEFAULT_SETTINGS);
     localStorage.clear();
+    sessionStorage.clear();
     setIsAuthenticated(false);
     setCurrentView('login');
+  };
+
+  const handleNavClick = (view: View) => {
+    setCurrentView(view);
   };
 
   const renderView = () => {
@@ -163,7 +173,7 @@ const App = () => {
 
     switch(currentView) {
       case 'dashboard':
-        return <Dashboard transactions={transactions} onAddTransaction={() => setModalOpen(true)} studentName={settings.profile.name} currency={settings.currency} />;
+        return <Dashboard transactions={transactions} onAddTransaction={() => setModalOpen(true)} studentName={settings.profile.name} studentSchool={settings.profile.school} currency={settings.currency} isDarkMode={settings.isDarkMode} />;
       case 'transactions':
         return <TransactionsList transactions={transactions} onDelete={deleteTransaction} currency={settings.currency} />;
       case 'budgets':
@@ -172,7 +182,7 @@ const App = () => {
             transactions={transactions} 
             budgets={budgets} 
             onSaveBudget={saveBudget} 
-            onDeleteBudget={deleteBudget} 
+            onDeleteBudget={deleteBudget}
             currency={settings.currency}
           />
         );
@@ -196,7 +206,7 @@ const App = () => {
           />
         );
       default:
-        return <Dashboard transactions={transactions} onAddTransaction={() => setModalOpen(true)} studentName={settings.profile.name} currency={settings.currency} />;
+        return <Dashboard transactions={transactions} onAddTransaction={() => setModalOpen(true)} studentName={settings.profile.name} studentSchool={settings.profile.school} currency={settings.currency} isDarkMode={settings.isDarkMode} />;
     }
   };
 
@@ -205,91 +215,156 @@ const App = () => {
   return (
     <div className={`flex h-screen w-full overflow-hidden transition-colors duration-500 ${settings.isDarkMode ? 'dark bg-slate-950' : 'bg-slate-50/50'} ${settings.theme === 'vibrant' ? 'vibrant-mode' : ''}`}>
       
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar (Hidden on Mobile) */}
       {showNav && (
-        <aside className="hidden md:flex flex-col w-64 h-full glass-panel border-r border-white/40 dark:border-white/5 z-10 animate-fade-in">
-          <div className="p-8">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-slate-900 dark:bg-indigo-600 text-white flex items-center justify-center text-lg">M</span>
-              Montra
-            </h1>
+        <aside 
+          className="
+            hidden md:flex
+            fixed left-0 top-0 bottom-0 z-50 
+            flex-col 
+            glass-panel border-r border-white/40 dark:border-white/5 
+            transition-all duration-500 ease-ios transform-gpu
+            overflow-hidden group
+            shadow-[0_0_40px_-10px_rgba(0,0,0,0.1)] hover:shadow-[0_0_50px_-5px_rgba(79,70,229,0.15)]
+            backdrop-blur-2xl saturate-150
+            md:translate-x-0 md:w-20 md:hover:w-72
+          "
+        >
+          {/* Header / Logo */}
+          <div className="h-24 flex items-center px-5 relative shrink-0">
+             <div className="flex items-center gap-4">
+               <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-indigo-500/20 z-10 shrink-0 transform transition-transform duration-300 hover:scale-110 hover:rotate-3">
+                 M
+               </div>
+               <div className="md:absolute md:left-20 md:opacity-0 md:group-hover:opacity-100 transition-all duration-500 delay-75 md:transform md:translate-x-4 md:group-hover:translate-x-0 whitespace-nowrap">
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Montra</h1>
+                  <p className="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Student Finance</p>
+               </div>
+             </div>
           </div>
 
-          <nav className="flex-1 px-4 space-y-1">
+          {/* Navigation Links */}
+          <nav className="flex-1 px-3 space-y-2 py-4">
             {NAV_ITEMS.map((item) => {
               const isActive = currentView === item.id;
               return (
                 <button
                   key={item.id}
-                  onClick={() => setCurrentView(item.id as View)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                  onClick={() => handleNavClick(item.id as View)}
+                  className={`w-full flex items-center h-12 rounded-xl transition-all duration-300 ease-ios relative group/item overflow-hidden active:scale-95 ${
                     isActive 
-                      ? 'bg-white dark:bg-white/10 shadow-sm text-slate-900 dark:text-white' 
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-white/5'
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg shadow-indigo-500/20' 
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10'
                   }`}
                 >
-                  <item.icon size={18} className={isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'} />
-                  {item.label}
+                  <div className="w-14 flex items-center justify-center shrink-0">
+                     <item.icon size={20} className={`transition-transform duration-300 ease-ios ${isActive ? '' : 'group-hover/item:scale-110'}`} />
+                  </div>
+                  <span className={`whitespace-nowrap font-medium text-sm transition-all duration-300 ease-ios absolute left-14 md:opacity-0 md:group-hover:opacity-100 md:transform md:translate-x-4 md:group-hover:translate-x-0 md:delay-75`}>
+                    {item.label}
+                  </span>
                 </button>
               )
             })}
           </nav>
 
-          <div className="p-4 space-y-2">
+          {/* Footer Actions */}
+          <div className="p-3 space-y-2 shrink-0 bg-gradient-to-t from-white/80 via-white/50 to-transparent dark:from-slate-900 dark:via-slate-900/50">
+             {/* Pro Tip Card */}
+            <div className="w-full md:h-0 md:group-hover:h-auto overflow-hidden md:opacity-0 md:group-hover:opacity-100 transition-all duration-500 delay-100 ease-ios">
+               <GlassCard className="bg-gradient-to-br from-indigo-500 to-purple-600 border-none text-white p-4 mb-2 shadow-lg shadow-indigo-500/20">
+                <div className="flex items-start gap-3">
+                  <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm">
+                    <Plus size={14} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white mb-0.5">Quick Tip</p>
+                    <p className="text-[10px] leading-relaxed opacity-90 text-white/80">Log expenses daily to boost your streak!</p>
+                  </div>
+                </div>
+              </GlassCard>
+            </div>
+
             <button 
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all"
+              className="w-full flex items-center h-12 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-300 ease-ios whitespace-nowrap overflow-hidden relative active:scale-95"
             >
-              <LogOut size={18} />
-              Sign Out
+               <div className="w-14 flex items-center justify-center shrink-0">
+                 <LogOut size={20} />
+               </div>
+               <span className="absolute left-14 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 ease-ios">Sign Out</span>
             </button>
-            <GlassCard className="bg-gradient-to-br from-indigo-500 to-purple-600 border-none text-white p-4">
-              <p className="text-xs font-medium text-white/80 mb-1">Pro Tip</p>
-              <p className="text-xs leading-relaxed opacity-90">Track daily to get better AI insights!</p>
-            </GlassCard>
           </div>
         </aside>
       )}
 
-      {/* Main Content */}
-      <main className="flex-1 h-full overflow-hidden relative">
-        <div className="h-full overflow-y-auto p-4 md:p-8 custom-scrollbar">
-          <div className="max-w-5xl mx-auto">
-            {renderView()}
+      {/* Main Content Wrapper */}
+      <main 
+        className={`
+          flex-1 h-full overflow-hidden relative 
+          transition-all duration-500 ease-ios transform-gpu
+          ${showNav ? 'md:ml-20' : ''}
+        `}
+      >
+        
+        {/* Mobile Header (Simplified) */}
+        {showNav && (
+          <div className="md:hidden h-16 glass-panel border-b border-white/40 dark:border-white/5 flex items-center justify-center px-4 sticky top-0 z-30 backdrop-blur-xl transition-all duration-300 ease-ios">
+            <span className="font-bold text-lg text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-slate-900 dark:bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">M</div>
+              Montra
+            </span>
+          </div>
+        )}
+
+        <div className="h-full overflow-y-auto p-4 md:p-8 pb-32 md:pb-8 custom-scrollbar">
+          <div className="max-w-6xl mx-auto">
+             {/* Keyed container for page transitions */}
+            <div key={currentView} className="animate-page-enter">
+              {renderView()}
+            </div>
           </div>
         </div>
       </main>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Bottom Navigation Card */}
       {showNav && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-white/40 dark:border-white/5 pb-safe z-40">
-          <div className="flex justify-around items-center p-2">
-            {NAV_ITEMS.map((item) => {
-               const isActive = currentView === item.id;
-               return (
-                <button
-                  key={item.id}
-                  onClick={() => setCurrentView(item.id as View)}
-                  className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${
-                    isActive ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20' : 'text-slate-400'
-                  }`}
-                >
-                  <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                  <span className="text-[10px] font-medium">{item.label}</span>
-                </button>
-               );
-            })}
-          </div>
+        <nav className="md:hidden fixed bottom-5 left-4 right-4 h-16 glass-panel bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-2xl z-40 flex items-center justify-between px-6 shadow-2xl shadow-slate-300/20 dark:shadow-black/50 border border-white/40 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/5">
+          {NAV_ITEMS.map((item) => {
+            const isActive = currentView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id as View)}
+                className={`relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 ease-out active:scale-90 ${
+                  isActive 
+                    ? 'text-indigo-600 dark:text-indigo-400' 
+                    : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                }`}
+              >
+                <div className={`transition-all duration-300 ${isActive ? 'scale-110 -translate-y-1' : ''}`}>
+                  <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                </div>
+                {isActive && (
+                   <span className="absolute -bottom-1 w-1 h-1 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-scale-in" />
+                )}
+              </button>
+            )
+          })}
         </nav>
       )}
 
-      {/* Floating Action Button (Mobile) */}
+      {/* Floating Action Button (Mobile) - Positioned above Bottom Nav */}
       {showNav && (
         <button 
           onClick={() => setModalOpen(true)}
-          className="md:hidden fixed bottom-20 right-6 w-14 h-14 bg-slate-900 dark:bg-indigo-600 text-white rounded-full shadow-lg shadow-slate-900/20 flex items-center justify-center active:scale-90 transition-transform z-50"
+          className={`
+            md:hidden fixed bottom-24 right-5 w-14 h-14 bg-slate-900 dark:bg-indigo-600 text-white rounded-full 
+            shadow-xl shadow-indigo-500/30 flex items-center justify-center 
+            transition-all duration-500 ease-ios z-50 hover:scale-110 active:scale-95 border-2 border-white/20
+          `}
         >
-          <Plus size={24} />
+          <Plus size={26} />
         </button>
       )}
 

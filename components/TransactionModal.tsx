@@ -100,7 +100,7 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-md w-[95%] md:w-full">
         <style>
           {`
             @keyframes confetti-burst {
@@ -150,9 +150,9 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
             }
           `}
         </style>
-        <GlassCard className={`bg-white/95 dark:bg-slate-900/95 shadow-2xl border-white/50 dark:border-white/5 transition-all duration-500 overflow-hidden ${isSuccess ? 'scale-105' : 'scale-100'}`}>
+        <GlassCard className={`bg-white/95 dark:bg-slate-900/95 shadow-2xl border-white/50 dark:border-white/5 transition-all duration-500 overflow-visible ${isSuccess ? 'scale-105' : 'scale-100'}`}>
           {isSuccess ? (
-            <div className="py-10 flex flex-col items-center justify-center animate-fade-in text-center relative overflow-visible">
+            <div className="py-10 flex flex-col items-center justify-center animate-fade-in text-center relative">
               
               {/* Toast Notification Banner at Top */}
               <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full px-6 z-30 pointer-events-none">
@@ -310,14 +310,16 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
 
                 <div className="space-y-1.5">
                   <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Category</label>
-                  <GlassSelect value={category} onChange={(e) => setCategory(e.target.value as Category)}>
-                    {Object.values(Category).filter(c => {
-                      const isIncomeCat = INCOME_CATEGORIES.includes(c);
-                      return type === 'income' ? isIncomeCat : !isIncomeCat;
-                    }).map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </GlassSelect>
+                  <div className="relative z-50">
+                    <GlassSelect value={category} onChange={(e) => setCategory(e.target.value as Category)}>
+                      {Object.values(Category).filter(c => {
+                        const isIncomeCat = INCOME_CATEGORIES.includes(c);
+                        return type === 'income' ? isIncomeCat : !isIncomeCat;
+                      }).map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </GlassSelect>
+                  </div>
                 </div>
 
                 <div className="pt-2">

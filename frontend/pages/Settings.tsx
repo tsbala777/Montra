@@ -271,31 +271,30 @@ export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetD
           </div>
         </MagicBentoCard>
 
-        {/* Placeholder / Extra Info */}
         <MagicBentoCard
           title="Montra Pro"
           description="Coming soon"
           colSpan={2}
           enableStars={false}
           clickEffect={true}
-          className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/80 dark:to-purple-900/80 border-indigo-100 dark:border-indigo-500/30 shadow-sm relative overflow-hidden group"
+          className="bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-blue-700 dark:to-indigo-800 border-none shadow-md relative overflow-hidden group text-white"
         >
           <div className="h-full flex items-center justify-between relative mt-2">
             <div className="space-y-3 max-w-[65%] relative z-10">
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-yellow-100 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-400/30 text-yellow-700 dark:text-yellow-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/20 border border-white/20 text-white text-[10px] font-extrabold uppercase tracking-widest shadow-sm backdrop-blur-sm">
                 Early Access
               </div>
-              <p className="text-sm font-medium text-slate-600 dark:text-amber-100/80 leading-relaxed text-balance">
+              <p className="text-sm font-medium text-blue-50 leading-relaxed text-balance">
                 Unlock advanced analytics, AI insights, and unlimited budget goals.
               </p>
             </div>
             {/* Watermark */}
-            <div className="absolute -right-4 -bottom-4 text-[10rem] opacity-10 dark:opacity-10 pointer-events-none select-none font-black text-blue-900 dark:text-white leading-none mix-blend-overlay">
+            <div className="absolute -right-4 -bottom-4 text-[10rem] opacity-20 pointer-events-none select-none font-black text-white leading-none mix-blend-overlay">
               PRO
             </div>
 
             {/* Shine Effect Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/0 to-white/20 dark:to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/0 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
           </div>
         </MagicBentoCard>
 

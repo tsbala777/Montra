@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Eye, EyeOff, TrendingUp, TrendingDown, Wallet, CreditCard, PiggyBank, ShoppingCart, Car, Coffee, Smartphone } from 'lucide-react';
 
 // --- HELPER COMPONENTS (ICONS) ---
@@ -37,13 +38,37 @@ interface SignInPageProps {
 
 // --- FLOATING FEATURE CARDS ---
 
+// Shared animation config
+// We use a large x range to ensure it goes off-screen.
+// "Left to Right" means starting from negative x and going to positive x.
+// Shared animation config
+// We use a large x range to ensure it goes off-screen.
+// "Left to Right" means starting from negative x and going to positive x.
+const floatAnimation = (delay: number, duration: number) => ({
+    initial: { x: -400, opacity: 0 },
+    animate: {
+        x: ['-50%', '350%'], // Move across the container
+        opacity: [0, 1, 1, 0] // Fade in/out at edges
+    },
+    transition: {
+        duration: duration,
+        repeat: Infinity,
+        repeatDelay: 0,
+        delay: delay,
+        ease: "linear"
+    }
+});
+
 const MonthlyExpenseCard = () => (
-    <div className="auth-card absolute top-12 left-10 scale-[0.85] lg:scale-95 bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-2xl animate-float w-80">
+    <motion.div
+        {...floatAnimation(0, 30)}
+        style={{ top: '5%' }}
+        whileHover={{ scale: 0.9, zIndex: 40, transition: { duration: 0.3 } }}
+        className="auth-card absolute left-0 scale-[0.65] bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-2xl w-80"
+    >
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-                <div className="p-2 bg-gradient-to-br from-emerald-400/30 to-teal-500/30 rounded-xl">
-                    <Wallet className="w-5 h-5 text-emerald-300" />
-                </div>
+                <img src="/logo.png" alt="Montra Logo" className="w-8 h-8 object-contain" />
                 <span className="text-sm font-semibold text-white/90">Monthly Summary</span>
             </div>
             <span className="text-xs text-emerald-400 font-medium">Jan 2026</span>
@@ -68,11 +93,16 @@ const MonthlyExpenseCard = () => (
             </div>
             <p className="text-xs text-white/50 text-center">63% of budget used</p>
         </div>
-    </div>
+    </motion.div>
 );
 
 const BudgetCategoriesCard = () => (
-    <div className="auth-card absolute top-1/2 -right-8 -translate-y-[60%] scale-[0.85] lg:scale-90 bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-2xl animate-float-delayed w-72">
+    <motion.div
+        {...floatAnimation(6, 32)}
+        style={{ top: '25%' }}
+        whileHover={{ scale: 0.9, zIndex: 40, transition: { duration: 0.3 } }}
+        className="auth-card absolute left-0 scale-[0.75] bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-2xl w-72"
+    >
         <div className="flex items-center gap-2 mb-4">
             <div className="p-2 bg-gradient-to-br from-blue-400/30 to-indigo-500/30 rounded-xl">
                 <PiggyBank className="w-5 h-5 text-blue-300" />
@@ -89,9 +119,6 @@ const BudgetCategoriesCard = () => (
                         <span className="text-xs text-white/80 font-medium">Groceries</span>
                         <span className="text-xs text-white/60">₹8,200</span>
                     </div>
-                    <div className="w-full bg-white/10 h-1.5 rounded-full mt-1">
-                        <div className="bg-orange-400 h-full w-[75%] rounded-full"></div>
-                    </div>
                 </div>
             </div>
             <div className="flex items-center gap-3">
@@ -103,31 +130,19 @@ const BudgetCategoriesCard = () => (
                         <span className="text-xs text-white/80 font-medium">Transport</span>
                         <span className="text-xs text-white/60">₹3,500</span>
                     </div>
-                    <div className="w-full bg-white/10 h-1.5 rounded-full mt-1">
-                        <div className="bg-purple-400 h-full w-[45%] rounded-full"></div>
-                    </div>
-                </div>
-            </div>
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-400/30 to-rose-500/30 flex items-center justify-center">
-                    <Coffee className="w-5 h-5 text-pink-300" />
-                </div>
-                <div className="flex-1">
-                    <div className="flex justify-between items-center">
-                        <span className="text-xs text-white/80 font-medium">Food & Dining</span>
-                        <span className="text-xs text-white/60">₹5,800</span>
-                    </div>
-                    <div className="w-full bg-white/10 h-1.5 rounded-full mt-1">
-                        <div className="bg-pink-400 h-full w-[60%] rounded-full"></div>
-                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </motion.div>
 );
 
 const TransactionCard = () => (
-    <div className="auth-card absolute top-[60%] left-6 scale-[0.8] lg:scale-90 bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-2xl shadow-2xl animate-float-slow w-72">
+    <motion.div
+        {...floatAnimation(12, 28)}
+        style={{ top: '45%' }}
+        whileHover={{ scale: 0.9, zIndex: 40, transition: { duration: 0.3 } }}
+        className="auth-card absolute left-0 scale-[0.7] bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-2xl shadow-2xl w-72"
+    >
         <div className="flex items-center gap-2 mb-4">
             <div className="p-2 bg-gradient-to-br from-cyan-400/30 to-sky-500/30 rounded-xl">
                 <CreditCard className="w-5 h-5 text-cyan-300" />
@@ -147,18 +162,6 @@ const TransactionCard = () => (
             </div>
             <div className="flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
-                        <Smartphone className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                        <p className="text-xs font-medium text-white/90">Phone Recharge</p>
-                        <p className="text-[10px] text-white/50">Utilities</p>
-                    </div>
-                </div>
-                <span className="text-rose-400 font-semibold text-sm">-₹499</span>
-            </div>
-            <div className="flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold">₹</div>
                     <div>
                         <p className="text-xs font-medium text-white/90">Salary Credit</p>
@@ -168,11 +171,16 @@ const TransactionCard = () => (
                 <span className="text-emerald-400 font-semibold text-sm">+₹45,000</span>
             </div>
         </div>
-    </div>
+    </motion.div>
 );
 
 const IncomeExpenseChart = () => (
-    <div className="auth-card absolute top-[75%] -right-4 scale-[0.8] lg:scale-90 bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-2xl shadow-2xl animate-float-extra-slow w-52">
+    <motion.div
+        {...floatAnimation(18, 35)}
+        style={{ top: '65%' }}
+        whileHover={{ scale: 0.9, zIndex: 40, transition: { duration: 0.3 } }}
+        className="auth-card absolute left-0 scale-[0.6] bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-2xl shadow-2xl w-52"
+    >
         <p className="text-xs text-white/60 font-medium mb-3 text-center">Income vs Expense</p>
         <div className="flex items-end justify-center gap-3 h-24">
             <div className="flex flex-col items-center gap-1">
@@ -183,31 +191,57 @@ const IncomeExpenseChart = () => (
                 <div className="w-8 bg-gradient-to-t from-rose-500 to-pink-400 rounded-t-lg" style={{ height: '50px' }}></div>
                 <span className="text-[10px] text-white/50">Expense</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
-                <div className="w-8 bg-gradient-to-t from-blue-500 to-indigo-400 rounded-t-lg" style={{ height: '30px' }}></div>
-                <span className="text-[10px] text-white/50">Savings</span>
+        </div>
+    </motion.div>
+);
+
+const InvestmentCard = () => (
+    <motion.div
+        {...floatAnimation(24, 30)}
+        style={{ top: '80%' }}
+        whileHover={{ scale: 0.9, zIndex: 40, transition: { duration: 0.3 } }}
+        className="auth-card absolute left-0 scale-[0.55] bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-2xl shadow-2xl w-60"
+    >
+        <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-gradient-to-br from-amber-400/30 to-orange-500/30 rounded-xl">
+                <TrendingUp className="w-5 h-5 text-amber-300" />
+            </div>
+            <div>
+                <p className="text-xs text-white/60 font-medium">Investments</p>
+                <p className="text-sm font-bold text-white">₹1,25,000</p>
             </div>
         </div>
-    </div>
+        <div className="flex items-center justify-between">
+            <div className="px-2 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold">
+                +12.5%
+            </div>
+            <div className="flex gap-1 items-end h-8">
+                <div className="w-1.5 h-3 bg-white/20 rounded-t-sm"></div>
+                <div className="w-1.5 h-5 bg-white/20 rounded-t-sm"></div>
+                <div className="w-1.5 h-4 bg-white/20 rounded-t-sm"></div>
+                <div className="w-1.5 h-7 bg-gradient-to-t from-emerald-500 to-teal-400 rounded-t-sm"></div>
+            </div>
+        </div>
+    </motion.div>
 );
 
 // --- MOBILE HERO ---
 
 const MobileHero = () => (
-    <div className="md:hidden w-full bg-gradient-to-br from-slate-900 via-blue-900 to-teal-900 p-6 pb-10 relative overflow-hidden shrink-0">
+    <div className="md:hidden w-full bg-gradient-to-br from-blue-900 via-indigo-900 to-blue-950 p-6 pb-10 relative overflow-hidden shrink-0">
         {/* Animated gradient orbs */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-48 h-48 bg-teal-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-0 left-0 w-64 h-64 bg-blue-600/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-48 h-48 bg-indigo-600/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
 
         <div className="relative z-10 text-center">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-lg px-4 py-2 rounded-full mb-4">
-                <Wallet className="w-5 h-5 text-teal-400" />
+                <Wallet className="w-5 h-5 text-blue-400" />
                 <span className="text-white font-bold text-lg">Montra</span>
             </div>
             <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
                 Track every rupee.
             </h2>
-            <p className="text-xl font-light text-teal-300 mb-4">
+            <p className="text-xl font-light text-blue-200 mb-4">
                 Control your future.
             </p>
 
@@ -251,47 +285,45 @@ export const SignInPage: React.FC<SignInPageProps> = ({
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <div className="min-h-screen w-full flex flex-col md:flex-row md:items-center md:justify-center p-0 md:p-6 bg-slate-50 dark:bg-zinc-950 overflow-hidden font-sans">
-            
-            {/* Background elements */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-                <div className="absolute top-1/2 right-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
-            </div>
+        <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 md:p-6 overflow-hidden font-sans">
+
+
 
             {/* MOBILE HEADER (When on small screens, show Mobile Header) */}
-            <MobileHero />
+            {/* <MobileHero /> - Removed as per user request */}
 
             {/* CARD CONTAINER */}
-            <div className="w-full max-w-5xl md:h-[700px] flex md:rounded-[2.5rem] md:shadow-2xl md:ring-1 md:ring-slate-200 dark:md:ring-white/5 overflow-hidden bg-white dark:bg-zinc-900 z-10 transition-all duration-300">
-                
-                {/* LEFT CARD (Visuals) - Hidden on mobile */}
-                <div className="hidden md:block w-1/2 relative bg-slate-900 border-r border-white/10 overflow-hidden">
-                    {/* Animated Gradient Background */}
-                    <div className="absolute inset-0 auth-gradient-bg"></div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/50 via-transparent to-slate-900/50 mix-blend-overlay"></div>
+            <div className="w-full max-w-5xl md:h-auto md:min-h-[600px] flex rounded-3xl md:rounded-[2.5rem] overflow-hidden z-10 transition-all duration-300 shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-[#0B1120]">
 
-                    {/* Animated gradient orbs */}
-                    <div className="absolute top-20 left-20 w-80 h-80 bg-blue-500/30 rounded-full blur-[80px] animate-pulse"></div>
-                    <div className="absolute bottom-20 right-20 w-64 h-64 bg-teal-500/30 rounded-full blur-[80px] animate-pulse delay-1000"></div>
+                {/* LEFT CARD (Visuals) - Hidden on mobile */}
+                <div className="hidden md:block w-1/2 relative bg-blue-950 border-r border-white/10 overflow-hidden">
+                    {/* Animated Gradient Background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-indigo-900/40 to-slate-900/90"></div>
+                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
+
+                    {/* Animated gradient orbs - Brand Colors */}
+                    <div className="absolute top-20 left-20 w-80 h-80 bg-blue-600/40 rounded-full blur-[100px] animate-pulse"></div>
+                    <div className="absolute bottom-20 right-20 w-64 h-64 bg-indigo-500/40 rounded-full blur-[100px] animate-pulse delay-1000"></div>
 
                     {/* Floating Feature Cards */}
                     <MonthlyExpenseCard />
                     <BudgetCategoriesCard />
                     <TransactionCard />
                     <IncomeExpenseChart />
+                    <InvestmentCard />
 
                     {/* Tagline */}
-                    <div className="absolute bottom-10 left-8 z-40 max-w-sm">
-                        <div className="bg-gradient-to-r from-slate-900/80 to-transparent backdrop-blur-md p-5 -ml-5 rounded-2xl border border-white/5">
+                    {/* Tagline */}
+                    <div className="absolute bottom-10 left-0 w-full z-[100] flex justify-center px-6">
+                        <div className="max-w-md w-full bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-xl shadow-blue-900/20 text-center">
                             <h2 className="text-3xl font-bold text-white mb-3 tracking-tight leading-tight">
                                 Track every rupee.
                                 <br />
-                                <span className="bg-gradient-to-r from-teal-300 to-cyan-300 bg-clip-text text-transparent">
+                                <span className="bg-gradient-to-r from-blue-200 to-indigo-200 bg-clip-text text-transparent">
                                     Control your future.
                                 </span>
                             </h2>
-                            <p className="text-white/70 text-sm font-light leading-relaxed">
+                            <p className="text-blue-100/80 text-sm font-light leading-relaxed">
                                 Smart budgeting, expense tracking, and financial insights — all in one beautiful app.
                             </p>
                         </div>
@@ -299,15 +331,13 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                 </div>
 
                 {/* RIGHT CARD (Form) */}
-                <div className="w-full md:w-1/2 flex items-center justify-center p-6 lg:p-12 relative bg-white dark:bg-zinc-900 overflow-y-auto custom-scrollbar">
-                    <div className="w-full max-w-[420px] space-y-8 my-auto">
-                        
-                        {/* Logo for desktop */}
-                        <div className="hidden md:flex items-center gap-2 mb-2">
-                            <div className="p-2 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl shadow-lg shadow-blue-500/20">
-                                <Wallet className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="text-xl font-bold text-slate-900 dark:text-white">Montra</span>
+                <div className="w-full md:w-1/2 flex items-center justify-center p-6 lg:p-8 relative bg-white dark:bg-[#0B1120] overflow-y-auto custom-scrollbar">
+                    <div className="w-full max-w-[420px] space-y-6 my-auto">
+
+                        {/* Logo for desktop and mobile */}
+                        <div className="flex items-center justify-center md:justify-start gap-4 mb-2">
+                            <img src="/logo.png" alt="Montra Logo" className="w-24 h-24 object-contain" />
+                            <span className="text-3xl font-bold text-slate-900 dark:text-white">Montra</span>
                         </div>
 
                         <div className="text-center md:text-left space-y-2">
@@ -319,7 +349,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                             </p>
                         </div>
 
-                        <form className="space-y-5" onSubmit={onSignIn}>
+                        <form className="space-y-4" onSubmit={onSignIn}>
                             {/* Name Input (Only for Signup) */}
                             {mode === 'signup' && (
                                 <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -330,7 +360,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                                         name="name"
                                         type="text"
                                         placeholder="Enter your full name"
-                                        className="auth-input w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 font-medium text-sm"
+                                        className="auth-input w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 font-medium text-sm"
                                     />
                                 </div>
                             )}
@@ -344,7 +374,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                                     type="email"
                                     autoComplete="email"
                                     placeholder="name@example.com"
-                                    className="auth-input w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 font-medium text-sm"
+                                    className="auth-input w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 font-medium text-sm"
                                 />
                             </div>
 
@@ -358,7 +388,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                                         type={showPassword ? 'text' : 'password'}
                                         autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                                         placeholder="••••••••"
-                                        className="auth-input w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 pr-12 font-medium text-sm"
+                                        className="auth-input w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 pr-12 font-medium text-sm"
                                     />
                                     <button
                                         type="button"
@@ -393,7 +423,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
 
                             <button
                                 type="submit"
-                                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all duration-200 text-base"
+                                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all duration-200 text-base"
                             >
                                 {mode === 'login' ? 'Sign In' : 'Create Account'}
                             </button>

@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { UserSettings } from '../types';
 import { GlassInput, GlassSelect } from '../components/ui/Glass';
-import { Download, Trash2, Moon, Sun, Laptop, LogOut, ChevronRight, Camera, Mail, Phone, User } from 'lucide-react';
+import { Download, Trash2, Moon, Sun, Laptop, LogOut, ChevronRight, Camera, Mail, Phone, User, Pencil } from 'lucide-react';
 import { MagicBentoGrid, MagicBentoCard } from '../components/MagicBento';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Props {
   settings: UserSettings;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetData, onLogout, transactions }) => {
+  const { user } = useAuth();
   const [isResetConfirm, setIsResetConfirm] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -61,104 +63,63 @@ export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetD
 
       <MagicBentoGrid enableSpotlight={false}>
 
-        {/* Profile Card (Large) */}
+        {/* Profile Card (Large) - Horizontal Layout */}
         <MagicBentoCard
-          title="User Profile"
+          title="Profile"
           colSpan={2}
-          rowSpan={2}
+          rowSpan={1}
           enableStars={false}
           clickEffect={true}
           className="bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 shadow-sm"
         >
-          <div className="flex flex-col gap-6 mt-4 relative z-10">
-            {/* Avatar & Name Section */}
-            <div className="flex items-center gap-5">
-              {/* Clickable Avatar with Upload */}
-              <div className="relative group">
-                <input
-                  ref={avatarInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => avatarInputRef.current?.click()}
-                  className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-white text-3xl font-bold shadow-sm ring-4 ring-white dark:ring-white/5 overflow-hidden transition-all hover:ring-indigo-500/50 dark:hover:ring-indigo-400/50 cursor-pointer"
-                >
-                  {settings.profile.avatar ? (
-                    <img src={settings.profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    settings.profile.name ? settings.profile.name.charAt(0).toUpperCase() : <User size={32} />
-                  )}
-                </button>
-                <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                  <Camera size={24} className="text-white" />
-                </div>
-              </div>
-              <div>
-                <h4 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{settings.profile.name || 'Your Name'}</h4>
-                <p className="text-slate-500 dark:text-slate-400 text-sm">{settings.profile.email || 'Add your email below'}</p>
+          <div className="flex items-center gap-6 mt-2 h-full">
+            {/* Avatar Section */}
+            <div className="relative group shrink-0">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-white text-2xl font-bold shadow-sm ring-4 ring-white dark:ring-white/5 overflow-hidden transition-all hover:ring-indigo-500/50 dark:hover:ring-indigo-400/50 cursor-pointer"
+              >
+                {settings.profile.avatar ? (
+                  <img src={settings.profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  settings.profile.name ? settings.profile.name.charAt(0).toUpperCase() : <User size={28} />
+                )}
+              </button>
+              <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                <Camera size={20} className="text-white" />
               </div>
             </div>
 
-            {/* Profile Form */}
-            <div className="space-y-4 bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-200 dark:border-white/5">
-              {/* Display Name */}
-              <div>
-                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Display Name</label>
-                <div className="relative">
-                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <GlassInput
-                    value={settings.profile.name}
-                    onChange={(e) => handleProfileChange('name', e.target.value)}
-                    placeholder="Your name"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Email Address</label>
-                <div className="relative">
-                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <GlassInput
-                    type="email"
-                    value={settings.profile.email}
-                    onChange={(e) => handleProfileChange('email', e.target.value)}
-                    placeholder="your@email.com"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Phone Number</label>
-                <div className="relative">
-                  <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <GlassInput
-                    type="tel"
-                    value={settings.profile.phone}
-                    onChange={(e) => handleProfileChange('phone', e.target.value)}
-                    placeholder="+1 (555) 000-0000"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              {/* Bio */}
-              <div>
-                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Bio</label>
-                <textarea
-                  value={settings.profile.bio}
-                  onChange={(e) => handleProfileChange('bio', e.target.value)}
-                  placeholder="Tell us a little about yourself..."
-                  rows={2}
-                  className="w-full bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-indigo-500/20 focus:border-slate-400 dark:focus:border-indigo-500/50 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 resize-none"
+            {/* Info Section */}
+            <div className="flex-1 min-w-0">
+              <div className="relative group/name w-full max-w-sm mb-1">
+                <input
+                  type="text"
+                  value={settings.profile.name}
+                  onChange={(e) => handleProfileChange('name', e.target.value)}
+                  placeholder="Your Name"
+                  className="w-full text-2xl font-bold text-slate-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 placeholder:text-slate-300 dark:placeholder:text-slate-600 px-0 py-0"
                 />
+                <Pencil size={14} className="absolute -right-5 top-1/2 -translate-y-1/2 text-slate-400 opacity-0 group-hover/name:opacity-100 transition-opacity pointer-events-none" />
               </div>
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm mb-3">
+                <Mail size={14} />
+                <span className="truncate">{user?.email || settings.profile.email || 'No email connected'}</span>
+              </div>
+
+              <GlassInput
+                placeholder="Edit your bio..."
+                value={settings.profile.bio}
+                onChange={(e) => handleProfileChange('bio', e.target.value)}
+                className="text-xs py-2 bg-slate-50 dark:bg-white/5 border-none"
+              />
             </div>
           </div>
         </MagicBentoCard>
@@ -309,18 +270,24 @@ export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetD
           colSpan={2}
           enableStars={false}
           clickEffect={true}
-          className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-yellow-900/10 dark:to-orange-900/10 border-amber-200 dark:border-yellow-500/20 shadow-sm"
+          className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/80 dark:to-purple-900/80 border-indigo-100 dark:border-indigo-500/30 shadow-sm relative overflow-hidden group"
         >
           <div className="h-full flex items-center justify-between relative mt-2">
-            <div className="space-y-2 max-w-[60%]">
-              <div className="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-yellow-100 dark:bg-yellow-500/20 border border-yellow-200 dark:border-yellow-500/30 text-yellow-700 dark:text-yellow-300 text-[10px] font-bold uppercase tracking-wider">
+            <div className="space-y-3 max-w-[65%] relative z-10">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-yellow-100 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-400/30 text-yellow-700 dark:text-yellow-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm">
                 Early Access
               </div>
-              <p className="text-sm text-slate-600 dark:text-white/60">Unlock advanced analytics, AI insights, and unlimited budget goals.</p>
+              <p className="text-sm font-medium text-slate-600 dark:text-amber-100/80 leading-relaxed text-balance">
+                Unlock advanced analytics, AI insights, and unlimited budget goals.
+              </p>
             </div>
-            <div className="absolute right-0 bottom-0 text-9xl opacity-10 dark:opacity-5 pointer-events-none select-none font-black text-amber-900 dark:text-white/20">
+            {/* Watermark */}
+            <div className="absolute -right-4 -bottom-4 text-[10rem] opacity-10 dark:opacity-10 pointer-events-none select-none font-black text-blue-900 dark:text-white leading-none mix-blend-overlay">
               PRO
             </div>
+
+            {/* Shine Effect Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/0 to-white/20 dark:to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
           </div>
         </MagicBentoCard>
 

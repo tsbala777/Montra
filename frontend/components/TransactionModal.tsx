@@ -43,7 +43,9 @@ interface Props {
   onClose: () => void;
   onSave: (t: Omit<Transaction, 'id'>) => void;
   currency: string;
+  currency: string;
   initialType?: TransactionType;
+  initialData?: Transaction | null;
 }
 
 // Preset tags for quick selection
@@ -77,7 +79,7 @@ const WALLET_OPTIONS = [
   { id: 'upi', label: 'UPI', icon: <Smartphone size={18} /> },
 ] as const;
 
-export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, currency, initialType = 'expense' }) => {
+export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, currency, initialType = 'expense', initialData }) => {
   // Helper to get local date string YYYY-MM-DD
   const getTodayString = () => {
     const d = new Date();
@@ -122,23 +124,46 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
 
   useEffect(() => {
     if (isOpen) {
-      if (initialType) {
-        setType(initialType);
-        if (initialType === 'income') {
-          setCategory(Category.INCOME);
-        } else {
-          setCategory(Category.FOOD);
+      if (initialData) {
+        // Edit Mode: Populate fields
+        setDescription(initialData.description);
+        setAmount(initialData.amount.toString());
+        // Convert ISO date back to YYYY-MM-DD
+        const d = new Date(initialData.date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        setDate(`${year}-${month}-${day}`);
+
+        setType(initialData.type);
+        setCategory(initialData.category);
+        setSource(initialData.source || '');
+        setWallet(initialData.wallet || 'card');
+        setTags(initialData.tags || []);
+
+      } else {
+        // Create Mode: Reset or set defaults
+        if (initialType) {
+          setType(initialType);
+          if (initialType === 'income') {
+            setCategory(Category.INCOME);
+          } else {
+            setCategory(Category.FOOD);
+          }
+        }
+
+        if (!description && !amount) {
+          setDate(getTodayString());
+          setTags([]);
+          setCustomTag('');
+          setWallet('card');
+          setSource('');
+          setDescription('');
+          setAmount('');
         }
       }
-
-      if (!description && !amount) {
-        setDate(getTodayString());
-        setTags([]);
-        setCustomTag('');
-        setWallet('card');
-      }
     }
-  }, [isOpen, initialType]);
+  }, [isOpen, initialType, initialData]);
 
 
   useEffect(() => {

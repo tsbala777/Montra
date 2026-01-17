@@ -64,6 +64,7 @@ export interface UserProfile {
 
 export interface UserSettings {
   currency: string;
+  language: string;
   theme: 'vibrant' | 'minimalist';
   isDarkMode: boolean;
   profile: UserProfile;

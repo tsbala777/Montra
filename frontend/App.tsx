@@ -37,7 +37,8 @@ const Auth = React.lazy(() => import('./pages/Auth').then(module => ({ default: 
 
 
 const DEFAULT_SETTINGS: UserSettings = {
-  currency: '$',
+  currency: '₹',
+  language: 'en',
   theme: 'vibrant',
   isDarkMode: false,
   investmentAmount: 0,
@@ -57,6 +58,7 @@ const AppContent = () => {
   const [currentView, setCurrentView] = useState<View>('login');
   const [isModalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<TransactionType>('expense');
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
 
   // State for data
@@ -137,10 +139,24 @@ const AppContent = () => {
     }
   };
 
-  const addTransaction = async (t: Omit<Transaction, 'id'>) => {
+  const handleSaveTransaction = async (t: Omit<Transaction, 'id'>) => {
     if (!user) return;
-    const newTransaction = { ...t, id: crypto.randomUUID() };
-    await saveTransaction(user.uid, newTransaction);
+
+    // If editing, use existing ID, otherwise generate new one
+    const id = editingTransaction ? editingTransaction.id : crypto.randomUUID();
+    const transactionToSave = { ...t, id };
+
+    await saveTransaction(user.uid, transactionToSave);
+
+    // Close modal and reset editing state
+    setModalOpen(false);
+    setEditingTransaction(null);
+  };
+
+  const handleEditTransaction = (t: Transaction) => {
+    setEditingTransaction(t);
+    setModalType(t.type);
+    setModalOpen(true);
   };
 
   const handleDeleteTransaction = async (id: string) => {
@@ -250,6 +266,7 @@ const AppContent = () => {
             goals={goals}
             profile={settings.profile}
             onAddTransaction={(type) => {
+              setEditingTransaction(null);
               setModalType(type);
               setModalOpen(true);
             }}
@@ -263,7 +280,18 @@ const AppContent = () => {
           />
         );
       case 'transactions':
-        return <TransactionsList transactions={transactions} onDelete={handleDeleteTransaction} currency={settings.currency} />;
+        return (
+          <TransactionsList
+            transactions={transactions}
+            onDelete={handleDeleteTransaction}
+            onEdit={handleEditTransaction}
+            onAddTransaction={() => {
+              setEditingTransaction(null);
+              setModalOpen(true);
+            }}
+            currency={settings.currency}
+          />
+        );
       case 'budgets':
         return (
           <Budgets
@@ -310,7 +338,10 @@ const AppContent = () => {
             budgets={budgets}
             goals={goals}
             profile={settings.profile}
-            onAddTransaction={() => setModalOpen(true)}
+            onAddTransaction={() => {
+              setEditingTransaction(null);
+              setModalOpen(true);
+            }}
             currency={settings.currency}
             isDarkMode={settings.isDarkMode}
             investmentAmount={settings.investmentAmount}
@@ -335,6 +366,9 @@ const AppContent = () => {
           onNavClick={handleNavClick}
           onLogout={handleLogout}
           profile={settings.profile}
+          email={user?.email || settings.profile.email}
+          language={settings.language}
+          onLanguageChange={(lang) => handleUpdateSettings({ ...settings, language: lang })}
         />
       )}
 
@@ -392,7 +426,10 @@ const AppContent = () => {
       {/* Floating Action Button (Mobile) - Positioned above Bottom Nav */}
       {showNav && (
         <button
-          onClick={() => setModalOpen(true)}
+          onClick={() => {
+            setEditingTransaction(null);
+            setModalOpen(true);
+          }}
           className={`
             md:hidden fixed bottom-24 right-5 w-14 h-14 bg-slate-900 dark:bg-indigo-600 text-white rounded-full 
             shadow-xl shadow-indigo-500/30 flex items-center justify-center 
@@ -406,10 +443,14 @@ const AppContent = () => {
       {/* Transaction Modal */}
       <TransactionModal
         isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={addTransaction}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingTransaction(null);
+        }}
+        onSave={handleSaveTransaction}
         currency={settings.currency}
         initialType={modalType}
+        initialData={editingTransaction}
       />
     </div>
   );

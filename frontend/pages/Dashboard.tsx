@@ -4,7 +4,7 @@ import { Transaction, Category, Budget, SavingsGoal, UserProfile } from '../type
 import { GlassCard, GlassButton } from '../components/ui/Glass';
 import { CreditCardWidget } from '../components/CreditCardWidget';
 import { CATEGORY_ICONS, CATEGORY_COLORS } from '../constants';
-import { TrendingUp, TrendingDown, ArrowUpRight, Wallet, MoreHorizontal, Calendar, PieChart as PieChartIcon, Activity, Plus, X, Landmark } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowUpRight, Wallet, MoreHorizontal, Calendar, PieChart as PieChartIcon, Activity, Plus, X, Landmark, Target } from 'lucide-react';
 
 interface Props {
   transactions: Transaction[];
@@ -35,6 +35,7 @@ export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profi
   const [hoveredData, setHoveredData] = useState<any>(null);
   const [showInvestmentModal, setShowInvestmentModal] = useState(false);
   const [newInvestmentAmount, setNewInvestmentAmount] = useState('');
+  const [graphStyle, setGraphStyle] = useState<'line' | 'bar' | 'area'>('line');
 
   // Fallback for undefined investmentAmount (for existing users without this field)
   const safeInvestmentAmount = investmentAmount ?? 0;
@@ -107,6 +108,23 @@ export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profi
   });
 
   const recentTransactions = [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+
+  // Smart Alerts Logic
+  // 1. Budget Alerts: Find budgets with > 80% usage
+  const budgetAlerts = budgets.map(budget => {
+    const spent = currentMonthTransactions
+      .filter(t => t.category === budget.category && t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+    const percentage = Math.min((spent / budget.limit) * 100, 100);
+    return { ...budget, spent, percentage };
+  }).filter(b => b.percentage >= 80).sort((a, b) => b.percentage - a.percentage).slice(0, 3);
+
+  // 2. Goal Reminders: Find goals due in next 30 days
+  const goalReminders = goals.filter(goal => {
+    if (!goal.deadline) return false;
+    const daysLeft = Math.ceil((new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+    return daysLeft >= 0 && daysLeft <= 30 && goal.currentAmount < goal.targetAmount;
+  }).sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime()).slice(0, 3);
 
   return (
     <div className="space-y-8 animate-fade-in pb-10">
@@ -212,6 +230,83 @@ export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profi
         </div>
       </div>
 
+      {/* Smart Alerts Section */}
+      {(budgetAlerts.length > 0 || goalReminders.length > 0) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+          {/* Budget Watch */}
+          {budgetAlerts.length > 0 && (
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="p-2 bg-rose-100 dark:bg-rose-900/20 rounded-lg text-rose-500">
+                  <Activity size={18} />
+                </div>
+                <h3 className="font-bold text-slate-900 dark:text-white">Budget Watch</h3>
+              </div>
+
+              <div className="space-y-4">
+                {budgetAlerts.map((budget, idx) => (
+                  <div key={idx} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-bold text-slate-700 dark:text-slate-300">{budget.category}</span>
+                      <span className={`font-bold ${budget.percentage >= 100 ? 'text-red-500' : 'text-amber-500'}`}>
+                        {budget.percentage.toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${budget.percentage >= 100 ? 'bg-red-500' : 'bg-amber-500'}`}
+                        style={{ width: `${budget.percentage}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      {currency}{budget.spent.toLocaleString()} spent of {currency}{budget.limit.toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Goal Focus */}
+          {goalReminders.length > 0 && (
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg text-blue-500">
+                  <Target size={18} />
+                </div>
+                <h3 className="font-bold text-slate-900 dark:text-white">Goal Focus</h3>
+              </div>
+
+              <div className="space-y-4">
+                {goalReminders.map(goal => {
+                  const daysLeft = Math.ceil((new Date(goal.deadline!).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+                  return (
+                    <div key={goal.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-blue-500 shadow-sm border border-slate-100 dark:border-slate-700">
+                          <Target size={20} />
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-slate-800 dark:text-white">{goal.name}</p>
+                          <p className="text-xs text-slate-500 font-medium">
+                            {daysLeft <= 0 ? 'Due Today!' : `${daysLeft} days left`}
+                          </p>
+                        </div>
+                      </div>
+                      <button className="px-3 py-1.5 bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-lg hover:bg-blue-200 dark:hover:bg-blue-500/20 transition-colors">
+                        Boost
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+        </div>
+      )}
+
       {/* Main Content Grid: Analytics + Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
@@ -219,9 +314,20 @@ export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profi
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Money Analytics</h3>
-            <button className="text-xs font-semibold bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors">
-              Full Stats
-            </button>
+            <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 gap-1">
+              {(['line', 'bar', 'area'] as const).map((style) => (
+                <button
+                  key={style}
+                  onClick={() => setGraphStyle(style)}
+                  className={`px-3 py-1 rounded-md text-xs font-bold capitalize transition-all ${graphStyle === style
+                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                    }`}
+                >
+                  {style}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="mb-8">
@@ -237,28 +343,81 @@ export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profi
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <XAxis
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: '#94a3b8' }}
-                  dy={10}
-                  interval={0}
-                />
-                <Tooltip
-                  cursor={{ stroke: '#6366f1', strokeWidth: 1, strokeDasharray: '4 4' }}
-                  content={<CustomTooltip currency={currency} />}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="amount"
-                  stroke="#6366f1"
-                  strokeWidth={4}
-                  dot={{ r: 4, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
-                  activeDot={{ r: 6, strokeWidth: 0 }}
-                />
-              </LineChart>
+              {graphStyle === 'line' && (
+                <LineChart data={chartData}>
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: '#94a3b8' }}
+                    dy={10}
+                    interval={0}
+                  />
+                  <Tooltip
+                    cursor={{ stroke: '#6366f1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                    content={<CustomTooltip currency={currency} />}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="amount"
+                    stroke="#6366f1"
+                    strokeWidth={4}
+                    dot={{ r: 4, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                </LineChart>
+              )}
+              {graphStyle === 'bar' && (
+                <BarChart data={chartData}>
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: '#94a3b8' }}
+                    dy={10}
+                    interval={0}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
+                    content={<CustomTooltip currency={currency} />}
+                  />
+                  <Bar
+                    dataKey="amount"
+                    fill="#6366f1"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              )}
+              {graphStyle === 'area' && (
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: '#94a3b8' }}
+                    dy={10}
+                    interval={0}
+                  />
+                  <Tooltip
+                    cursor={{ stroke: '#6366f1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                    content={<CustomTooltip currency={currency} />}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="amount"
+                    stroke="#6366f1"
+                    fillOpacity={1}
+                    fill="url(#colorAmount)"
+                    strokeWidth={3}
+                  />
+                </AreaChart>
+              )}
             </ResponsiveContainer>
           </div>
         </div>
@@ -266,7 +425,7 @@ export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profi
         {/* All Transaction List */}
         <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">All Transaction</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recent Transactions</h3>
             <ArrowUpRight size={18} className="text-slate-400 hover:text-slate-600 cursor-pointer" />
           </div>
 

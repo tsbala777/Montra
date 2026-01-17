@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { UserSettings } from '../types';
 import { GlassInput, GlassSelect } from '../components/ui/Glass';
-import { Download, Trash2, Moon, Sun, Laptop, LogOut, ChevronRight } from 'lucide-react';
+import { Download, Trash2, Moon, Sun, Laptop, LogOut, ChevronRight, Camera, Mail, Phone, User } from 'lucide-react';
 import { MagicBentoGrid, MagicBentoCard } from '../components/MagicBento';
 
 interface Props {
@@ -14,12 +14,24 @@ interface Props {
 
 export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetData, onLogout, transactions }) => {
   const [isResetConfirm, setIsResetConfirm] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const handleProfileChange = (key: string, value: string) => {
     onUpdateSettings({
       ...settings,
       profile: { ...settings.profile, [key]: value }
     });
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleProfileChange('avatar', reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const exportData = () => {
@@ -59,31 +71,92 @@ export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetD
           className="bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 shadow-sm"
         >
           <div className="flex flex-col gap-6 mt-4 relative z-10">
+            {/* Avatar & Name Section */}
             <div className="flex items-center gap-5">
-              <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-white text-3xl font-bold shadow-sm ring-4 ring-white dark:ring-white/5">
-                {settings.profile.name ? settings.profile.name.charAt(0).toUpperCase() : 'S'}
+              {/* Clickable Avatar with Upload */}
+              <div className="relative group">
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-white text-3xl font-bold shadow-sm ring-4 ring-white dark:ring-white/5 overflow-hidden transition-all hover:ring-indigo-500/50 dark:hover:ring-indigo-400/50 cursor-pointer"
+                >
+                  {settings.profile.avatar ? (
+                    <img src={settings.profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    settings.profile.name ? settings.profile.name.charAt(0).toUpperCase() : <User size={32} />
+                  )}
+                </button>
+                <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <Camera size={24} className="text-white" />
+                </div>
               </div>
               <div>
-                <h4 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{settings.profile.name || 'Student'}</h4>
-                <p className="text-slate-500 dark:text-slate-400">{settings.profile.school || 'University Not Set'}</p>
+                <h4 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{settings.profile.name || 'Your Name'}</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">{settings.profile.email || 'Add your email below'}</p>
               </div>
             </div>
 
+            {/* Profile Form */}
             <div className="space-y-4 bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-200 dark:border-white/5">
+              {/* Display Name */}
               <div>
                 <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Display Name</label>
-                <GlassInput
-                  value={settings.profile.name}
-                  onChange={(e) => handleProfileChange('name', e.target.value)}
-                  placeholder="Your name"
-                />
+                <div className="relative">
+                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <GlassInput
+                    value={settings.profile.name}
+                    onChange={(e) => handleProfileChange('name', e.target.value)}
+                    placeholder="Your name"
+                    className="pl-10"
+                  />
+                </div>
               </div>
+
+              {/* Email */}
               <div>
-                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 ml-1">University / School</label>
-                <GlassInput
-                  value={settings.profile.school}
-                  onChange={(e) => handleProfileChange('school', e.target.value)}
-                  placeholder="e.g. Stanford University"
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Email Address</label>
+                <div className="relative">
+                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <GlassInput
+                    type="email"
+                    value={settings.profile.email}
+                    onChange={(e) => handleProfileChange('email', e.target.value)}
+                    placeholder="your@email.com"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Phone Number</label>
+                <div className="relative">
+                  <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <GlassInput
+                    type="tel"
+                    value={settings.profile.phone}
+                    onChange={(e) => handleProfileChange('phone', e.target.value)}
+                    placeholder="+1 (555) 000-0000"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Bio</label>
+                <textarea
+                  value={settings.profile.bio}
+                  onChange={(e) => handleProfileChange('bio', e.target.value)}
+                  placeholder="Tell us a little about yourself..."
+                  rows={2}
+                  className="w-full bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-indigo-500/20 focus:border-slate-400 dark:focus:border-indigo-500/50 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 resize-none"
                 />
               </div>
             </div>
@@ -146,9 +219,9 @@ export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetD
           colSpan={1}
           enableStars={false}
           clickEffect={true}
-          className="bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 shadow-sm z-10"
+          className="bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 shadow-sm z-10 !overflow-visible"
         >
-          <div className="mt-4 flex flex-col justify-center h-4/5">
+          <div className="mt-4 flex flex-col justify-center h-4/5 overflow-visible">
             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/5">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl font-bold font-mono">
@@ -163,6 +236,7 @@ export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetD
                 value={settings.currency}
                 onChange={(e) => onUpdateSettings({ ...settings, currency: e.target.value })}
                 className="min-w-[120px]"
+                align="right"
               >
                 <option value="$">USD ($)</option>
                 <option value="€">EUR (€)</option>

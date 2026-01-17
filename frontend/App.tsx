@@ -39,10 +39,13 @@ const DEFAULT_SETTINGS: UserSettings = {
   currency: '$',
   theme: 'vibrant',
   isDarkMode: false,
+  investmentAmount: 0,
   profile: {
     name: '',
-    school: '',
-    year: 'Freshman'
+    email: '',
+    phone: '',
+    avatar: '',
+    bio: ''
   }
 };
 
@@ -246,6 +249,11 @@ const AppContent = () => {
             }}
             currency={settings.currency}
             isDarkMode={settings.isDarkMode}
+            investmentAmount={settings.investmentAmount}
+            onUpdateInvestment={(amount) => {
+              const newSettings = { ...settings, investmentAmount: amount };
+              handleUpdateSettings(newSettings);
+            }}
           />
         );
       case 'transactions':
@@ -290,6 +298,11 @@ const AppContent = () => {
             onAddTransaction={() => setModalOpen(true)}
             currency={settings.currency}
             isDarkMode={settings.isDarkMode}
+            investmentAmount={settings.investmentAmount}
+            onUpdateInvestment={(amount) => {
+              const newSettings = { ...settings, investmentAmount: amount };
+              handleUpdateSettings(newSettings);
+            }}
           />
         );
     }

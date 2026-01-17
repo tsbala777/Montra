@@ -4,7 +4,7 @@ import { Transaction, Category, Budget, SavingsGoal, UserProfile } from '../type
 import { GlassCard, GlassButton } from '../components/ui/Glass';
 import { CreditCardWidget } from '../components/CreditCardWidget';
 import { CATEGORY_ICONS, CATEGORY_COLORS } from '../constants';
-import { TrendingUp, TrendingDown, ArrowUpRight, Wallet, MoreHorizontal, Calendar, PieChart as PieChartIcon, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowUpRight, Wallet, MoreHorizontal, Calendar, PieChart as PieChartIcon, Activity, Plus, X, Landmark } from 'lucide-react';
 
 interface Props {
   transactions: Transaction[];
@@ -14,6 +14,8 @@ interface Props {
   onAddTransaction: (type: 'income' | 'expense') => void;
   currency: string;
   isDarkMode: boolean;
+  investmentAmount: number;
+  onUpdateInvestment: (amount: number) => void;
 }
 
 const CustomTooltip = ({ active, payload, currency }: any) => {
@@ -29,12 +31,63 @@ const CustomTooltip = ({ active, payload, currency }: any) => {
   return null;
 };
 
-export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profile, onAddTransaction, currency, isDarkMode }) => {
+export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profile, onAddTransaction, currency, isDarkMode, investmentAmount, onUpdateInvestment }) => {
   const [hoveredData, setHoveredData] = useState<any>(null);
+  const [showInvestmentModal, setShowInvestmentModal] = useState(false);
+  const [newInvestmentAmount, setNewInvestmentAmount] = useState('');
 
+  // Fallback for undefined investmentAmount (for existing users without this field)
+  const safeInvestmentAmount = investmentAmount ?? 0;
+
+  // Current date info for period calculations
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  // Get start of current month and last month
+  const currentMonthStart = new Date(currentYear, currentMonth, 1);
+  const lastMonthStart = new Date(currentYear, currentMonth - 1, 1);
+  const lastMonthEnd = new Date(currentYear, currentMonth, 0); // Last day of previous month
+
+  // Filter transactions by period
+  const currentMonthTransactions = transactions.filter(t => {
+    const date = new Date(t.date);
+    return date >= currentMonthStart;
+  });
+
+  const lastMonthTransactions = transactions.filter(t => {
+    const date = new Date(t.date);
+    return date >= lastMonthStart && date <= lastMonthEnd;
+  });
+
+  // Current month income & expenses
+  const currentMonthIncome = currentMonthTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+  const currentMonthExpenses = currentMonthTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+
+  // Last month income & expenses
+  const lastMonthIncome = lastMonthTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+  const lastMonthExpenses = lastMonthTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+
+  // Total (all-time) calculations
   const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
   const expenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
   const balance = income - expenses;
+
+  // Calculate dynamic percentages
+  // Income change: Compare current month income to last month income
+  const incomeChange = lastMonthIncome > 0
+    ? Math.round(((currentMonthIncome - lastMonthIncome) / lastMonthIncome) * 100)
+    : currentMonthIncome > 0 ? 100 : 0;
+
+  // Expense ratio: What percentage of income is being spent (current month)
+  const expenseRatio = currentMonthIncome > 0
+    ? Math.round((currentMonthExpenses / currentMonthIncome) * 100)
+    : currentMonthExpenses > 0 ? 100 : 0;
+
+  // Savings rate: What percentage of income is saved (balance as % of total income)
+  const savingsRate = income > 0
+    ? Math.round((balance / income) * 100)
+    : 0;
 
   // Last 7 Days Data Generation
   const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -98,48 +151,62 @@ export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profi
           {/* Income Stat */}
           <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between h-full hover:shadow-md transition-shadow">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 H-2 rounded-full bg-blue-500" />
+              <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
               <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Your Income</span>
               <Activity size={14} className="text-slate-300 ml-auto" />
             </div>
             <div>
               <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{currency}{income.toLocaleString()}</h3>
+              <p className="text-xs text-slate-400">This month: {currency}{currentMonthIncome.toLocaleString()}</p>
               <p className="text-xs text-slate-500">Your Income Amount</p>
             </div>
             <div className="mt-4">
-              <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-1 rounded-full font-bold">+10%</span>
+              <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${incomeChange >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                {incomeChange >= 0 ? '+' : ''}{incomeChange}% vs last month
+              </span>
             </div>
           </div>
 
           {/* Expenses Stat */}
           <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between h-full hover:shadow-md transition-shadow">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 H-2 rounded-full bg-yellow-500" />
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
               <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Total Expenses</span>
               <PieChartIcon size={14} className="text-slate-300 ml-auto" />
             </div>
             <div>
               <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{currency}{expenses.toLocaleString()}</h3>
+              <p className="text-xs text-slate-400">This month: {currency}{currentMonthExpenses.toLocaleString()}</p>
               <p className="text-xs text-slate-500">Your Total Spend</p>
             </div>
             <div className="mt-4">
-              <span className="bg-yellow-100 text-yellow-700 text-[10px] px-2 py-1 rounded-full font-bold">28%</span>
+              <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${expenseRatio <= 50 ? 'bg-emerald-100 text-emerald-700' : expenseRatio <= 80 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                {expenseRatio}% of income spent
+              </span>
             </div>
           </div>
 
-          {/* Total Money Stat */}
+          {/* Total Investment Stat */}
           <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between h-full hover:shadow-md transition-shadow">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 H-2 rounded-full bg-emerald-500" />
-              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Total Money</span>
-              <Wallet size={14} className="text-slate-300 ml-auto" />
+              <div className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Total Invested</span>
+              <Landmark size={14} className="text-slate-300 ml-auto" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{currency}{(balance + 1450).toLocaleString()}</h3> {/* Mocking total assets */}
-              <p className="text-xs text-slate-500">Total in wallet</p>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{currency}{safeInvestmentAmount.toLocaleString()}</h3>
+              <p className="text-xs text-slate-400">Savings rate: {savingsRate}%</p>
+              <p className="text-xs text-slate-500">Total money in your wallet</p>
             </div>
-            <div className="mt-4">
-              <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-1 rounded-full font-bold">+12%</span>
+            <div className="mt-4 flex items-center justify-between">
+              <span className="bg-purple-100 text-purple-700 text-[10px] px-2 py-1 rounded-full font-bold">Investment</span>
+              <button
+                onClick={() => setShowInvestmentModal(true)}
+                className="flex items-center gap-1 px-2 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs font-bold transition-all active:scale-95"
+              >
+                <Plus size={12} />
+                Add
+              </button>
             </div>
           </div>
         </div>
@@ -159,7 +226,13 @@ export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profi
 
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">{currency}{balance.toLocaleString()}</h2>
-            <p className="text-slate-500 text-sm">You saved 10% more than last month 👏</p>
+            <p className="text-slate-500 text-sm">
+              {savingsRate > 0
+                ? `You're saving ${savingsRate}% of your income 🎯`
+                : savingsRate === 0
+                  ? 'Start tracking your income and expenses!'
+                  : `You're spending ${Math.abs(savingsRate)}% more than you earn ⚠️`}
+            </p>
           </div>
 
           <div className="h-64 w-full">
@@ -227,6 +300,79 @@ export const Dashboard: React.FC<Props> = ({ transactions, budgets, goals, profi
           </button>
         </div>
       </div>
+
+      {/* Investment Modal */}
+      {showInvestmentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-sm mx-4 shadow-2xl animate-scale-in">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                  <Landmark size={20} className="text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Add Investment</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowInvestmentModal(false);
+                  setNewInvestmentAmount('');
+                }}
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                <X size={16} className="text-slate-500" />
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                Investment Amount
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">{currency}</span>
+                <input
+                  type="number"
+                  value={newInvestmentAmount}
+                  onChange={(e) => setNewInvestmentAmount(e.target.value)}
+                  placeholder="0"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-lg font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <p className="mt-2 text-xs text-slate-500">
+                Current: {currency}{safeInvestmentAmount.toLocaleString()}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  const amount = parseFloat(newInvestmentAmount);
+                  if (!isNaN(amount) && amount > 0) {
+                    onUpdateInvestment(safeInvestmentAmount + amount);
+                    setShowInvestmentModal(false);
+                    setNewInvestmentAmount('');
+                  }
+                }}
+                className="flex-1 py-3 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl font-bold text-sm hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
+              >
+                Add to Total
+              </button>
+              <button
+                onClick={() => {
+                  const amount = parseFloat(newInvestmentAmount);
+                  if (!isNaN(amount) && amount >= 0) {
+                    onUpdateInvestment(amount);
+                    setShowInvestmentModal(false);
+                    setNewInvestmentAmount('');
+                  }
+                }}
+                className="flex-1 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-bold text-sm transition-colors"
+              >
+                Set as Total
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

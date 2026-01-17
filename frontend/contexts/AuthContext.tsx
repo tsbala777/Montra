@@ -22,8 +22,10 @@ const DEFAULT_SETTINGS: UserSettings = {
     isDarkMode: false,
     profile: {
         name: '',
-        school: '',
-        year: 'Freshman'
+        email: '',
+        phone: '',
+        avatar: '',
+        bio: ''
     }
 };
 

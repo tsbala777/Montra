@@ -5,12 +5,9 @@
 /* Custom Body Styles */
 
 body {
-  background: #F6F8FA;
-  background-image:
-    radial-gradient(at 0% 0%, rgba(26, 98, 238, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(26, 98, 238, 0.05) 0px, transparent 50%);
-  background-attachment: fixed;
-  transition: background-color 0.5s ease;
+  background: #ffffff;
+  color: rgba(0, 0, 0, 0.7);
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 .dark body {
@@ -21,12 +18,11 @@ body {
 }
 
 /* Glass Panel Styles */
-/* Glass Panel Styles */
 /* Default: Clean / Minimalist (Solid) */
 .glass-panel {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
   transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
@@ -38,11 +34,11 @@ body {
 
 /* Vibrant Mode: Glassmorphism */
 .vibrant-mode .glass-panel {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(0, 0, 0, 0.02);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.02);
 }
 
 .dark.vibrant-mode .glass-panel {

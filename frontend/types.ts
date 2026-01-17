@@ -53,8 +53,10 @@ export interface SavingsGoal {
 
 export interface UserProfile {
   name: string;
-  school: string;
-  year: string;
+  email: string;
+  phone: string;
+  avatar: string;
+  bio: string;
 }
 
 export interface UserSettings {
@@ -62,6 +64,7 @@ export interface UserSettings {
   theme: 'vibrant' | 'minimalist';
   isDarkMode: boolean;
   profile: UserProfile;
+  investmentAmount: number;
 }
 
 export interface AppState {

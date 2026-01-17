@@ -9,7 +9,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"General Sans"', 'sans-serif'],
+        sans: ['"Bricolage Grotesque"', 'sans-serif'],
       },
       colors: {
         // Mapping indigo to the new Primary Blue #1A62EE for consistent usage

@@ -310,11 +310,13 @@ const ParticleCard: React.FC<{
             };
         }, [animateParticles, clearAllParticles, disableAnimations, enableTilt, enableMagnetism, clickEffect, glowColor]);
 
+        const shouldHideOverflow = !className.includes('overflow-visible');
+
         return (
             <div
                 ref={cardRef}
                 className={`${className} particle-container`}
-                style={{ ...style, position: 'relative', overflow: 'hidden' }}
+                style={{ ...style, position: 'relative', overflow: shouldHideOverflow ? 'hidden' : 'visible' }}
             >
                 {children}
             </div>
@@ -556,10 +558,12 @@ export const MagicBentoCard: React.FC<MagicBentoCardProps> = ({
         );
     }
 
+    const shouldHideOverflow = !className.includes('overflow-visible');
+
     return (
         <div
             className={`${cardClassName} particle-container`}
-            style={{ ...cardStyle, position: 'relative', overflow: 'hidden' }}
+            style={{ ...cardStyle, position: 'relative', overflow: shouldHideOverflow ? 'hidden' : 'visible' }}
         >
             {content}
         </div>

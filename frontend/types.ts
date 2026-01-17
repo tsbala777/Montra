@@ -28,6 +28,8 @@ export interface Transaction {
   date: string;
   type: TransactionType;
   source?: string;
+  wallet?: 'cash' | 'card' | 'bank' | 'upi';
+  tags?: string[];
 }
 
 export interface Budget {
@@ -49,6 +51,7 @@ export interface SavingsGoal {
   targetAmount: number;
   currentAmount: number;
   icon: GoalIcon;
+  deadline?: string; // ISO Date String
 }
 
 export interface UserProfile {
@@ -74,4 +77,4 @@ export interface AppState {
   settings: UserSettings;
 }
 
-export type View = 'dashboard' | 'transactions' | 'budgets' | 'goals' | 'settings' | 'login' | 'signup';
+export type View = 'dashboard' | 'transactions' | 'budgets' | 'goals' | 'analytics' | 'settings' | 'login' | 'signup';

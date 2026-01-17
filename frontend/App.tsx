@@ -30,6 +30,7 @@ const Dashboard = React.lazy(() => import('./pages/Dashboard').then(module => ({
 const TransactionsList = React.lazy(() => import('./pages/TransactionsList').then(module => ({ default: module.TransactionsList })));
 const Budgets = React.lazy(() => import('./pages/Budgets').then(module => ({ default: module.Budgets })));
 const Goals = React.lazy(() => import('./pages/Goals').then(module => ({ default: module.Goals })));
+const Analytics = React.lazy(() => import('./pages/Analytics').then(module => ({ default: module.Analytics })));
 const Settings = React.lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
 const Auth = React.lazy(() => import('./pages/Auth').then(module => ({ default: module.Auth })));
 
@@ -191,6 +192,11 @@ const AppContent = () => {
     }
   };
 
+  const handleEditGoal = async (goal: SavingsGoal) => {
+    if (!user) return;
+    await updateGoalInDb(user.uid, goal.id, goal);
+  };
+
   const handleUpdateSettings = async (newSettings: UserSettings) => {
     if (!user) return;
     setSettings(newSettings);
@@ -274,7 +280,16 @@ const AppContent = () => {
             goals={goals}
             onAddGoal={addGoal}
             onUpdateGoal={updateGoalAmount}
+            onEditGoal={handleEditGoal}
             onDeleteGoal={handleDeleteGoal}
+            currency={settings.currency}
+          />
+        );
+      case 'analytics':
+        return (
+          <Analytics
+            transactions={transactions}
+            budgets={budgets}
             currency={settings.currency}
           />
         );

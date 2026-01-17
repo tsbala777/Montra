@@ -1,8 +1,42 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { GlassCard, GlassButton, GlassInput, GlassSelect } from './ui/Glass';
+import { GlassCard, GlassButton, GlassInput } from './ui/Glass';
 import { Category, Transaction, TransactionType } from '../types';
-import { X, CheckCircle2, Coins, Sparkles as SparklesIcon, Receipt, Flame, BellRing, Calendar, Plus, ArrowLeft } from 'lucide-react';
+import { CATEGORY_ICONS, CATEGORY_COLORS } from '../constants';
+import {
+  X,
+  CheckCircle2,
+  Coins,
+  Sparkles as SparklesIcon,
+  Receipt,
+  Flame,
+  BellRing,
+  Calendar as CalendarIcon,
+  ChevronRight,
+  Wallet,
+  CreditCard,
+  Building2,
+  Smartphone,
+  Tag,
+  Plus,
+  Coffee,
+  Bus,
+  Home,
+  Zap,
+  Tv,
+  Gamepad2,
+  GraduationCap,
+  ShoppingBag,
+  Apple,
+  Car,
+  Sparkles,
+  MoreHorizontal,
+  DollarSign,
+  Award,
+  Gift,
+  FileText
+} from 'lucide-react';
+import { Calendar } from './ui/calendar';
 
 interface Props {
   isOpen: boolean;
@@ -11,6 +45,37 @@ interface Props {
   currency: string;
   initialType?: TransactionType;
 }
+
+// Preset tags for quick selection
+const PRESET_TAGS = ['Lunch', 'Family', 'Work', 'Monthly', 'Shopping', 'Weekend', 'Personal', 'Bills'];
+
+// Category icons mapping
+const CATEGORY_ICON_MAP: Record<string, React.ReactNode> = {
+  [Category.FOOD]: <Coffee size={18} />,
+  [Category.TRAVEL]: <Bus size={18} />,
+  [Category.RENT]: <Home size={18} />,
+  [Category.UTILITIES]: <Zap size={18} />,
+  [Category.SUBSCRIPTIONS]: <Tv size={18} />,
+  [Category.ENTERTAINMENT]: <Gamepad2 size={18} />,
+  [Category.ACADEMICS]: <GraduationCap size={18} />,
+  [Category.SHOPPING]: <ShoppingBag size={18} />,
+  [Category.GROCERIES]: <Apple size={18} />,
+  [Category.TRANSPORTATION]: <Car size={18} />,
+  [Category.PERSONAL_CARE]: <Sparkles size={18} />,
+  [Category.OTHER]: <MoreHorizontal size={18} />,
+  [Category.INCOME]: <DollarSign size={18} />,
+  [Category.INCOME_SOURCE]: <Wallet size={18} />,
+  [Category.SCHOLARSHIP]: <Award size={18} />,
+  [Category.GIFT]: <Gift size={18} />,
+};
+
+// Wallet/Payment method options
+const WALLET_OPTIONS = [
+  { id: 'cash', label: 'Cash', icon: <Wallet size={18} /> },
+  { id: 'card', label: 'Card', icon: <CreditCard size={18} /> },
+  { id: 'bank', label: 'Bank', icon: <Building2 size={18} /> },
+  { id: 'upi', label: 'UPI', icon: <Smartphone size={18} /> },
+] as const;
 
 export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, currency, initialType = 'expense' }) => {
   // Helper to get local date string YYYY-MM-DD
@@ -22,13 +87,15 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
     return `${year}-${month}-${day}`;
   };
 
-  const getYesterdayString = () => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  const formatDisplayDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const today = new Date();
+    const isToday = d.toDateString() === today.toDateString();
+
+    if (isToday) {
+      return `Today, ${d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+    }
+    return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   const dateInputRef = useRef<HTMLInputElement>(null);
@@ -38,21 +105,25 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
   const [source, setSource] = useState('');
   const [type, setType] = useState<TransactionType>(initialType);
   const [category, setCategory] = useState<Category | string>(Category.FOOD);
-  const [customCategory, setCustomCategory] = useState('');
-  const [isCustomCategoryMode, setIsCustomCategoryMode] = useState(false);
+  const [wallet, setWallet] = useState<'cash' | 'card' | 'bank' | 'upi'>('card');
+  const [tags, setTags] = useState<string[]>([]);
+  const [customTag, setCustomTag] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [xpProgress, setXpProgress] = useState(45);
   const [displayXp, setDisplayXp] = useState(850);
+
+  // UI States
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [showWalletPicker, setShowWalletPicker] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // Confetti particles state
   const [particles, setParticles] = useState<{ id: number; color: string; angle: number; delay: number }[]>([]);
 
   useEffect(() => {
     if (isOpen) {
-      // Set type from prop when opening
       if (initialType) {
         setType(initialType);
-        // Reset category based on type
         if (initialType === 'income') {
           setCategory(Category.INCOME);
         } else {
@@ -60,19 +131,18 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
         }
       }
 
-      // Always reset date to today when opening a new blank transaction
       if (!description && !amount) {
         setDate(getTodayString());
-        setIsCustomCategoryMode(false);
-        setCustomCategory('');
+        setTags([]);
+        setCustomTag('');
+        setWallet('card');
       }
     }
-  }, [isOpen, initialType]); // added initialType dependency, removed description/amount dependency to avoid reset during editing, but kept logic inside for open check
+  }, [isOpen, initialType]);
 
 
   useEffect(() => {
     if (isSuccess) {
-      // 1. Confetti Burst
       const colors = ['bg-indigo-400', 'bg-purple-400', 'bg-emerald-400', 'bg-pink-400', 'bg-amber-400', 'bg-sky-400'];
       const newParticles = Array.from({ length: 16 }).map((_, i) => ({
         id: i,
@@ -82,10 +152,8 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
       }));
       setParticles(newParticles);
 
-      // 2. Animate XP bar & Numerical Counter
       setTimeout(() => {
         setXpProgress(60);
-        // Count up animation logic
         let current = 850;
         const target = 865;
         const interval = setInterval(() => {
@@ -108,47 +176,41 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!description || !amount || !date) return;
+    if (!amount || !date) return;
 
-    // Date Logic: 
-    // If selected date is today, use current ISO time to keep sort order correct relative to recent actions.
-    // If selected date is in the past/future, set to noon local time to avoid timezone shifts.
     let finalDateIso = '';
     const todayStr = getTodayString();
 
     if (date === todayStr) {
       finalDateIso = new Date().toISOString();
     } else {
-      // Create date at noon local time to ensure it stays on the selected calendar day regardless of timezone
       finalDateIso = new Date(`${date}T12:00:00`).toISOString();
     }
 
-    const finalCategory = isCustomCategoryMode ? customCategory : category;
-
     onSave({
-      description,
+      description: description || category.toString(),
       amount: parseFloat(amount),
       type,
-      category: finalCategory,
+      category,
       date: finalDateIso,
-      source: type === 'income' ? source : undefined
+      source: type === 'income' ? source : undefined,
+      wallet,
+      tags: tags.length > 0 ? tags : undefined
     });
 
-    // Show success animation
     setIsSuccess(true);
 
-    // Reset and close after a delay
     setTimeout(() => {
       setDescription('');
       setAmount('');
       setSource('');
-      setSource('');
       setDate(getTodayString());
-      setIsCustomCategoryMode(false);
-      setCustomCategory('');
+      setTags([]);
+      setCustomTag('');
+      setWallet('card');
       setIsSuccess(false);
       onClose();
-    }, 3200);
+    }, 2500);
   };
 
   const handleTypeChange = (newType: TransactionType) => {
@@ -158,29 +220,33 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
     } else {
       setCategory(Category.FOOD);
     }
-    setIsCustomCategoryMode(false);
-    setCustomCategory('');
   };
 
-  const handleCalendarClick = () => {
-    if (dateInputRef.current) {
-      try {
-        dateInputRef.current.showPicker();
-      } catch (err) {
-        console.log('showPicker not supported or failed', err);
-        // Fallback: try focusing the input which often opens picker on mobile
-        dateInputRef.current.focus();
-        dateInputRef.current.click();
-      }
+  const toggleTag = (tag: string) => {
+    setTags(prev =>
+      prev.includes(tag)
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
+  const addCustomTag = () => {
+    if (customTag.trim() && !tags.includes(customTag.trim())) {
+      setTags(prev => [...prev, customTag.trim()]);
+      setCustomTag('');
     }
   };
 
   const INCOME_CATEGORIES = [Category.INCOME, Category.INCOME_SOURCE, Category.SCHOLARSHIP, Category.GIFT];
+  const EXPENSE_CATEGORIES = Object.values(Category).filter(c => !INCOME_CATEGORIES.includes(c));
+  const currentCategories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
+  const selectedWallet = WALLET_OPTIONS.find(w => w.id === wallet);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
       <div className="absolute inset-0 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md w-[95%] md:w-full">
+      <div className="relative w-full max-w-md md:max-w-lg">
         <style>
           {`
             @keyframes confetti-burst {
@@ -208,6 +274,10 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
               0% { transform: translateY(-100%) scale(0.9); opacity: 0; }
               100% { transform: translateY(0) scale(1); opacity: 1; }
             }
+            @keyframes slide-up {
+              0% { transform: translateY(100%); opacity: 0; }
+              100% { transform: translateY(0); opacity: 1; }
+            }
             .confetti-particle {
               animation: confetti-burst 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
             }
@@ -228,12 +298,15 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
             .animate-toast-in {
               animation: toast-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             }
+            .animate-slide-up-modal {
+              animation: slide-up 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+            }
           `}
         </style>
-        <GlassCard className={`bg-white/95 dark:bg-slate-900/95 shadow-2xl border-white/50 dark:border-white/5 transition-all duration-500 overflow-visible ${isSuccess ? 'scale-105' : 'scale-100'}`}>
+
+        <div className={`bg-white dark:bg-slate-900 rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden transition-all duration-500 animate-slide-up-modal max-h-[90vh] md:max-h-[85vh] overflow-y-auto hide-scrollbar ${isSuccess ? 'scale-[1.02]' : 'scale-100'}`}>
           {isSuccess ? (
             <div className="py-10 flex flex-col items-center justify-center animate-fade-in text-center relative">
-
               {/* Toast Notification Banner at Top */}
               <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full px-6 z-30 pointer-events-none">
                 <div className="bg-slate-900 dark:bg-indigo-600 text-white px-4 py-2 rounded-2xl shadow-xl flex items-center justify-center gap-2 animate-toast-in border border-slate-800 dark:border-indigo-500/50">
@@ -270,11 +343,9 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
               </div>
 
               <div className="relative mb-8 mt-6">
-                {/* Visual "Ding" Pulse */}
                 <div className="absolute inset-0 bg-indigo-400/30 rounded-full" style={{ animation: 'ping-soft 1s ease-out forwards', animationDelay: '0.4s' }} />
-
                 <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full scale-150 animate-pulse" />
-                <div className="relative bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-7 rounded-full shadow-2xl shadow-indigo-200 dark:shadow-none animate-coin-spin-3d">
+                <div className="relative bg-[#2563EB] text-white p-7 rounded-full shadow-2xl shadow-blue-200 dark:shadow-none animate-coin-spin-3d">
                   <Coins size={64} />
                 </div>
                 <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-2 rounded-full shadow-lg animate-bounce ring-4 ring-white dark:ring-slate-900">
@@ -292,7 +363,6 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
                   </p>
                 </div>
 
-                {/* Level Progress Bar with Shimmer & Counter */}
                 <div className="space-y-2.5 bg-slate-50/50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
                   <div className="flex justify-between items-center text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                     <span className="flex items-center gap-1.5">
@@ -305,171 +375,346 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, cur
                   </div>
                   <div className="h-3 w-full bg-slate-200/50 dark:bg-white/10 rounded-full overflow-hidden shadow-inner p-0.5 relative">
                     <div
-                      className={`h-full bg-gradient-to-r from-indigo-500 via-indigo-400 to-purple-600 rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(79,70,229,0.4)] relative overflow-hidden ${isSuccess ? 'shimmer-bar' : ''}`}
+                      className={`h-full bg-[#2563EB] rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(37,99,235,0.4)] relative overflow-hidden ${isSuccess ? 'shimmer-bar' : ''}`}
                       style={{ width: `${xpProgress}%` }}
                     />
                   </div>
                 </div>
 
-                {/* Streak Badge */}
-                <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 px-5 py-2 rounded-full text-xs font-bold border border-amber-100 dark:border-amber-500/20 animate-slide-up shadow-sm">
+                <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 px-5 py-2 rounded-full text-xs font-bold border border-amber-100 dark:border-amber-500/20 shadow-sm">
                   <Flame size={16} className="fill-current animate-pulse text-orange-500" />
                   5 Day Logging Streak!
                 </div>
               </div>
             </div>
           ) : (
-            <div className="animate-slide-up">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2.5 bg-slate-100/80 dark:bg-white/5 rounded-xl">
-                    <Receipt className="w-6 h-6 text-slate-600 dark:text-slate-400" />
-                  </div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white">New Transaction</h2>
-                </div>
-                <button onClick={onClose} className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 transition-colors">
-                  <X size={24} />
+            <div>
+              {/* Header */}
+              <div className="flex justify-between items-center px-5 pt-4 pb-2">
+                <button
+                  onClick={onClose}
+                  className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={!amount}
+                  className={`text-sm font-bold px-4 py-2 rounded-xl transition-all ${amount
+                    ? 'text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10'
+                    : 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                    }`}
+                >
+                  Save
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="flex bg-slate-100/50 dark:bg-white/5 p-1 rounded-xl">
+              {/* Amount Input */}
+              <div className="text-center py-4 px-5">
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-1">Amount</p>
+                <div className="flex items-center justify-center gap-1 overflow-hidden">
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    autoFocus
+                    className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white bg-transparent border-none outline-none text-right min-w-[60px] max-w-[200px] placeholder:text-slate-300 dark:placeholder:text-slate-600"
+                    style={{ width: `${Math.max(60, (amount?.toString().length || 3) * 20)}px` }}
+                  />
+                  <span className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white flex-shrink-0">{currency}</span>
+                </div>
+              </div>
+
+              {/* Type Toggle */}
+              <div className="px-5 pb-3">
+                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-full">
                   <button
                     type="button"
-                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'expense' ? 'bg-white dark:bg-white/10 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                    className={`flex-1 py-2.5 text-sm font-bold rounded-full transition-all duration-300 ${type === 'expense'
+                      ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white'
+                      : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                      }`}
                     onClick={() => handleTypeChange('expense')}
                   >
                     Expense
                   </button>
                   <button
                     type="button"
-                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'income' ? 'bg-white dark:bg-white/10 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                    className={`flex-1 py-2.5 text-sm font-bold rounded-full transition-all duration-300 ${type === 'income'
+                      ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white'
+                      : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                      }`}
                     onClick={() => handleTypeChange('income')}
                   >
                     Income
                   </button>
                 </div>
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Amount</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">{currency}</span>
-                    <GlassInput
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      className="pl-8 text-lg font-bold"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      autoFocus
-                    />
+              {/* Form Fields */}
+              <div className="px-5 space-y-0.5 border-t border-slate-100 dark:border-slate-800">
+                {/* Date */}
+                <div
+                  className="flex items-center justify-between py-4 border-b border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 -mx-5 px-5 transition-colors"
+                  onClick={() => setShowCalendar(!showCalendar)}
+                >
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Date</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">{formatDisplayDate(date)}</span>
+                    <CalendarIcon size={16} className="text-slate-400" />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-center px-1">
-                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Date</label>
-                    <div className="flex gap-2">
-                      <button type="button" onClick={() => setDate(getYesterdayString())} className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded-md">Yesterday</button>
-                      <button type="button" onClick={() => setDate(getTodayString())} className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded-md">Today</button>
-                    </div>
-                  </div>
-                  <div className="relative group cursor-pointer" onClick={handleCalendarClick}>
-                    <div
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors z-10 pointer-events-none"
-                    >
-                      <Calendar size={22} />
-                    </div>
-                    <GlassInput
-                      ref={dateInputRef}
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="pl-12 font-medium cursor-pointer hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors w-full"
-                      onClick={handleCalendarClick}
-                    />
+                {/* Wallet */}
+                <div
+                  className="flex items-center justify-between py-4 border-b border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 -mx-5 px-5 transition-colors"
+                  onClick={() => setShowWalletPicker(!showWalletPicker)}
+                >
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Wallet</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">{selectedWallet?.label}</span>
+                    <ChevronRight size={16} className="text-slate-400" />
                   </div>
                 </div>
 
+                {/* Wallet Picker */}
+                {showWalletPicker && (
+                  <div className="grid grid-cols-4 gap-2 py-3 animate-fade-in">
+                    {WALLET_OPTIONS.map((w) => (
+                      <button
+                        key={w.id}
+                        type="button"
+                        onClick={() => {
+                          setWallet(w.id);
+                          setShowWalletPicker(false);
+                        }}
+                        className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${wallet === w.id
+                          ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-2 border-indigo-200 dark:border-indigo-500/30'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-2 border-transparent hover:bg-slate-200 dark:hover:bg-slate-700'
+                          }`}
+                      >
+                        {w.icon}
+                        <span className="text-xs font-medium">{w.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Category */}
+                <div
+                  className="flex items-center justify-between py-4 border-b border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 -mx-5 px-5 transition-colors"
+                  onClick={() => setShowCategoryPicker(!showCategoryPicker)}
+                >
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Category</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-500">{CATEGORY_ICON_MAP[category] || <MoreHorizontal size={18} />}</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">{category}</span>
+                    <ChevronRight size={16} className="text-slate-400" />
+                  </div>
+                </div>
+
+                {/* Category Picker */}
+                {showCategoryPicker && (
+                  <div className="grid grid-cols-4 gap-2 py-3 animate-fade-in max-h-48 overflow-y-auto custom-scrollbar">
+                    {currentCategories.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => {
+                          setCategory(cat);
+                          setShowCategoryPicker(false);
+                        }}
+                        className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all ${category === cat
+                          ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-2 border-indigo-200 dark:border-indigo-500/30'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-2 border-transparent hover:bg-slate-200 dark:hover:bg-slate-700'
+                          }`}
+                      >
+                        {CATEGORY_ICON_MAP[cat] || <MoreHorizontal size={18} />}
+                        <span className="text-[10px] font-medium truncate w-full text-center">{cat}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Source (Income only) */}
                 {type === 'income' && (
-                  <div className="animate-fade-in space-y-1.5">
-                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Source</label>
-                    <GlassInput
+                  <div className="py-4 border-b border-slate-100 dark:border-slate-800 -mx-5 px-5">
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-2">Source</span>
+                    <input
                       type="text"
-                      placeholder="e.g. Scholarship, Paycheck..."
+                      placeholder="e.g. Salary, Freelance..."
                       value={source}
                       onChange={(e) => setSource(e.target.value)}
+                      className="w-full text-sm text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-3 border-none outline-none focus:ring-2 focus:ring-indigo-500/20 placeholder:text-slate-400"
                     />
                   </div>
                 )}
 
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Description</label>
-                  <GlassInput
-                    type="text"
-                    placeholder="What did you buy?"
+                {/* Tags */}
+                <div className="py-4 border-b border-slate-100 dark:border-slate-800 -mx-5 px-5">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-3">Tags</span>
+
+                  {/* Custom Tag Input */}
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      type="text"
+                      placeholder="Add tag..."
+                      value={customTag}
+                      onChange={(e) => setCustomTag(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomTag())}
+                      className="flex-1 text-sm text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-2.5 border-none outline-none focus:ring-2 focus:ring-indigo-500/20 placeholder:text-slate-400"
+                    />
+                  </div>
+
+                  {/* Preset Tags */}
+                  <div className="flex flex-wrap gap-2">
+                    {PRESET_TAGS.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => toggleTag(tag)}
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${tags.includes(tag)
+                          ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-transparent hover:bg-slate-200 dark:hover:bg-slate-700'
+                          }`}
+                      >
+                        <Plus size={12} className={tags.includes(tag) ? 'rotate-45' : ''} />
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Selected Custom Tags */}
+                  {tags.filter(t => !PRESET_TAGS.includes(t)).length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {tags.filter(t => !PRESET_TAGS.includes(t)).map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => toggleTag(tag)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/30"
+                        >
+                          <Plus size={12} className="rotate-45" />
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Description */}
+                <div className="py-4 -mx-5 px-5">
+                  <textarea
+                    placeholder="Add details..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    rows={2}
+                    className="w-full text-sm text-slate-600 dark:text-slate-300 bg-transparent border-none outline-none resize-none placeholder:text-slate-400"
                   />
                 </div>
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Category</label>
-                  <div className="relative z-50">
-                    {isCustomCategoryMode ? (
-                      <div className="flex gap-2 animate-fade-in">
-                        <div className="relative flex-1">
-                          <GlassInput
-                            type="text"
-                            placeholder="Enter category name..."
-                            value={customCategory}
-                            onChange={(e) => setCustomCategory(e.target.value)}
-                            autoFocus
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setIsCustomCategoryMode(false)}
-                          className="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 transition-colors"
-                        >
-                          <ArrowLeft size={20} />
-                        </button>
-                      </div>
-                    ) : (
-                      <GlassSelect
-                        value={category}
-                        onChange={(e) => {
-                          if (e.target.value === 'CUSTOM_NEW' || e.target.value === Category.OTHER) {
-                            setIsCustomCategoryMode(true);
-                            setCustomCategory(e.target.value === Category.OTHER ? 'Other' : '');
-                          } else {
-                            setCategory(e.target.value as Category);
-                          }
-                        }}
-                        direction="up"
-                      >
-                        {Object.values(Category).filter(c => {
-                          const isIncomeCat = INCOME_CATEGORIES.includes(c);
-                          return type === 'income' ? isIncomeCat : !isIncomeCat;
-                        }).map((cat) => (
-                          <option key={cat} value={cat}>{cat}</option>
-                        ))}
-                        <option value="CUSTOM_NEW" className="font-bold text-indigo-600 dark:text-indigo-400">Custom Category...</option>
-                      </GlassSelect>
-                    )}
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <GlassButton type="submit" className="w-full py-4 text-base font-bold shadow-indigo-100 dark:shadow-none bg-indigo-600 hover:bg-indigo-700 text-white border-none">
-                    Log Transaction
-                  </GlassButton>
-                </div>
-              </form>
+              {/* Submit Button (Mobile) */}
+              <div className="p-4 pt-2 pb-6 md:pb-4">
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={!amount}
+                  className={`w-full py-3 rounded-xl text-sm font-bold transition-all ${amount
+                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                    }`}
+                >
+                  Log Transaction
+                </button>
+              </div>
             </div>
           )}
-        </GlassCard>
+        </div>
       </div>
+
+      {/* Calendar Overlay */}
+      {showCalendar && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
+          onClick={() => setShowCalendar(false)}
+        >
+          <div
+            className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl animate-scale-in max-w-sm w-full overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Quick Date Selection */}
+            <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+              <div className="grid grid-cols-3 gap-2">
+                {(() => {
+                  const todayStr = getTodayString();
+                  const yesterday = new Date();
+                  yesterday.setDate(yesterday.getDate() - 1);
+                  const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+                  const twoDaysAgo = new Date();
+                  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                  const twoDaysAgoStr = `${twoDaysAgo.getFullYear()}-${String(twoDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(twoDaysAgo.getDate()).padStart(2, '0')}`;
+
+                  const activeClass = "px-3 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors";
+                  const inactiveClass = "px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDate(todayStr);
+                          setShowCalendar(false);
+                        }}
+                        className={date === todayStr ? activeClass : inactiveClass}
+                      >
+                        Today
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDate(yesterdayStr);
+                          setShowCalendar(false);
+                        }}
+                        className={date === yesterdayStr ? activeClass : inactiveClass}
+                      >
+                        Yesterday
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDate(twoDaysAgoStr);
+                          setShowCalendar(false);
+                        }}
+                        className={date === twoDaysAgoStr ? activeClass : inactiveClass}
+                      >
+                        2 days ago
+                      </button>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
+            <Calendar
+              mode="single"
+              selected={new Date(date)}
+              onSelect={(selectedDate) => {
+                if (selectedDate) {
+                  const year = selectedDate.getFullYear();
+                  const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                  const day = String(selectedDate.getDate()).padStart(2, '0');
+                  setDate(`${year}-${month}-${day}`);
+                  setShowCalendar(false);
+                }
+              }}
+              className="p-4"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

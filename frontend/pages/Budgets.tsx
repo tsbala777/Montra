@@ -20,7 +20,7 @@ const CustomTooltip = ({ active, payload, label, currency }: any) => {
       <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/60 dark:border-white/10 p-3 rounded-xl shadow-xl">
         <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{label}</p>
         <p className="text-sm font-bold text-slate-800 dark:text-white">
-          <span className="text-indigo-500 mr-1">●</span>
+          <span className="text-[#2563EB] mr-1">●</span>
           {currency}{payload[0].value.toFixed(2)} Spent
         </p>
       </div>
@@ -46,7 +46,7 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
 
     // 1. Spending by Category
     const byCategory: Record<string, number> = {};
-    
+
     // 2. Daily Trend Data
     // Get all transactions that fall into budgeted categories
     const relevantTransactions = transactions.filter(t => {
@@ -57,10 +57,10 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
 
     // Populate byCategory map
     transactions.forEach(t => {
-       const d = new Date(t.date);
-       if (t.type === 'expense' && d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-         byCategory[t.category] = (byCategory[t.category] || 0) + t.amount;
-       }
+      const d = new Date(t.date);
+      if (t.type === 'expense' && d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+        byCategory[t.category] = (byCategory[t.category] || 0) + t.amount;
+      }
     });
 
     // Build Chart Data (Cumulative Daily)
@@ -68,14 +68,14 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
     const chartData = [];
     let runningTotal = 0;
     const today = now.getDate(); // Only plot up to today
-    
+
     for (let day = 1; day <= today; day++) {
       const daySpending = relevantTransactions
         .filter(t => new Date(t.date).getDate() === day)
         .reduce((sum, t) => sum + t.amount, 0);
-      
+
       runningTotal += daySpending;
-      
+
       chartData.push({
         day: day,
         label: new Date(currentYear, currentMonth, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -86,9 +86,9 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
     const totalBudgetLimit = budgets.reduce((sum, b) => sum + b.limit, 0);
     const totalSpentBudgeted = relevantTransactions.reduce((sum, t) => sum + t.amount, 0);
 
-    return { 
-      byCategory, 
-      chartData, 
+    return {
+      byCategory,
+      chartData,
       totalBudgetLimit,
       totalSpentBudgeted
     };
@@ -134,8 +134,8 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
             {!editingCategory && (
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Category</label>
-                <GlassSelect 
-                  value={selectedCategory} 
+                <GlassSelect
+                  value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value as Category)}
                   className="font-bold text-slate-800 dark:text-slate-100"
                 >
@@ -150,10 +150,10 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
             )}
             <div className={editingCategory ? 'col-span-2' : ''}>
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Monthly Limit ({currency})</label>
-              <GlassInput 
-                type="number" 
-                placeholder="0.00" 
-                value={limit} 
+              <GlassInput
+                type="number"
+                placeholder="0.00"
+                value={limit}
                 onChange={(e) => setLimit(e.target.value)}
                 autoFocus
                 className="font-bold text-slate-800 dark:text-slate-100"
@@ -171,51 +171,51 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
         <GlassCard className="p-6 relative overflow-hidden group">
           <div className="flex justify-between items-start mb-6">
             <div>
-               <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                 <TrendingUp size={24} className="text-indigo-500" />
-                 Spending Trend
-               </h3>
-               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
-                 Cumulative spending for budgeted categories this month.
-               </p>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <TrendingUp size={24} className="text-[#2563EB]" />
+                Spending Trend
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+                Cumulative spending for budgeted categories this month.
+              </p>
             </div>
             <div className="text-right">
               <p className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">Total Budget</p>
               <p className="text-xl font-black text-slate-900 dark:text-white">{currency}{spendingData.totalBudgetLimit.toLocaleString()}</p>
             </div>
           </div>
-          
+
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={spendingData.chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSpent" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
-                <XAxis 
-                  dataKey="label" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fontSize: 10, fill: '#94a3b8'}} 
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
                   minTickGap={30}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fontSize: 10, fill: '#94a3b8'}} 
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
                 />
                 <Tooltip content={<CustomTooltip currency={currency} />} />
                 <ReferenceLine y={spendingData.totalBudgetLimit} stroke="#10b981" strokeDasharray="3 3" label={{ position: 'top', value: 'Limit', fill: '#10b981', fontSize: 10, fontWeight: 'bold' }} />
-                <Area 
-                  type="monotone" 
-                  dataKey="spent" 
-                  stroke="#6366f1" 
-                  strokeWidth={3} 
-                  fillOpacity={1} 
-                  fill="url(#colorSpent)" 
+                <Area
+                  type="monotone"
+                  dataKey="spent"
+                  stroke="#2563EB"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#colorSpent)"
                   animationDuration={1500}
                 />
               </AreaChart>
@@ -227,9 +227,9 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
       {budgets.length === 0 && !isAdding ? (
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center animate-fade-in">
           <div className="relative mb-8">
-            <div className="absolute inset-0 bg-indigo-500/10 blur-3xl rounded-full" />
+            <div className="absolute inset-0 bg-[#2563EB]/10 blur-3xl rounded-full" />
             <div className="relative bg-white dark:bg-slate-900 glass-panel p-8 rounded-[2.5rem] shadow-2xl animate-float">
-              <PiggyBank className="w-20 h-20 text-indigo-500" strokeWidth={1.5} />
+              <PiggyBank className="w-20 h-20 text-[#2563EB]" strokeWidth={1.5} />
             </div>
             <div className="absolute -top-2 -right-2 p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl shadow-lg animate-pulse">
               <Sparkles size={24} />
@@ -245,13 +245,13 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
           </GlassButton>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {budgets.map((budget) => {
             const spent = spendingData.byCategory[budget.category] || 0;
             const remaining = budget.limit - spent;
             const rawPercentage = (spent / budget.limit) * 100;
             const widthPercentage = Math.min(rawPercentage, 100);
-            
+
             const isNearLimit = rawPercentage >= 85 && rawPercentage < 100;
             const isOverLimit = rawPercentage >= 100;
 
@@ -279,59 +279,70 @@ export const Budgets: React.FC<Props> = ({ transactions, budgets, onSaveBudget, 
             }
 
             return (
-              <GlassCard key={budget.category} hoverEffect className="relative group overflow-hidden border-white/60 dark:border-white/5 p-5">
-                 {/* Card Header with Edit/Delete */}
-                 <div className="flex justify-between items-start mb-5">
-                    <div className="flex items-center gap-3">
-                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${CATEGORY_COLORS[budget.category]}`}>
-                          {React.cloneElement(CATEGORY_ICONS[budget.category] as React.ReactElement<any>, { size: 24 })}
-                       </div>
-                       <div>
-                          <h4 className="font-bold text-lg text-slate-800 dark:text-white leading-tight">{budget.category}</h4>
-                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">Budget: {currency}{budget.limit.toFixed(0)}</p>
-                       </div>
-                    </div>
-                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity bg-white/50 dark:bg-slate-800/50 rounded-lg p-1 backdrop-blur-sm">
-                       <button onClick={() => startEdit(budget)} className="p-1.5 text-slate-400 hover:text-indigo-600 transition-colors rounded-md hover:bg-white dark:hover:bg-slate-700"><Pencil size={18} /></button>
-                       <button onClick={() => onDeleteBudget(budget.category)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors rounded-md hover:bg-white dark:hover:bg-slate-700"><Trash2 size={18} /></button>
-                    </div>
-                 </div>
+              <GlassCard key={budget.category} hoverEffect className="relative group overflow-visible border-white/40 dark:border-white/5 p-6 transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(37,99,235,0.1)] hover:-translate-y-1">
+                {/* Futuristic Glow Effect Removed */}
 
-                 {/* Progress Section */}
-                 <div className="space-y-3">
-                    <div className="flex justify-between items-end text-sm">
-                       <div className="flex flex-col">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider mb-0.5">Spent</span>
-                          <span className="font-bold text-slate-900 dark:text-white text-lg leading-none">{currency}{spent.toFixed(2)}</span>
-                       </div>
-                       <div className="flex flex-col items-end">
-                           <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider mb-0.5">Remaining</span>
-                           <span className={`font-bold text-lg leading-none ${remaining < 0 ? 'text-red-500' : 'text-slate-900 dark:text-white'}`}>
-                             {remaining < 0 ? '-' : ''}{currency}{Math.abs(remaining).toFixed(2)}
-                           </span>
-                       </div>
-                    </div>
-
-                    {/* The Bar */}
-                    <div className="relative h-4 w-full bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden shadow-inner ring-1 ring-black/5 dark:ring-white/5">
-                        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(45deg,rgba(0,0,0,.05) 25%,transparent 25%,transparent 50%,rgba(0,0,0,.05) 50%,rgba(0,0,0,.05) 75%,transparent 75%,transparent)', backgroundSize: '1rem 1rem' }}></div>
-                        <div 
-                           className={`relative h-full bg-gradient-to-r ${barGradient} transition-all duration-1000 ease-out shadow-lg ${shadowColor}`}
-                           style={{ width: `${widthPercentage}%` }}
-                        >
-                           <div className="absolute top-0 right-0 bottom-0 w-full bg-gradient-to-l from-white/20 to-transparent" />
+                <div className="relative">
+                  {/* Card Header with Edit/Delete */}
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/10 dark:shadow-none border border-white/50 dark:border-white/10 backdrop-blur-md relative overflow-hidden group-hover:scale-105 transition-transform duration-300`}>
+                        <div className={`absolute inset-0 opacity-20 ${CATEGORY_COLORS[budget.category].replace('bg-', 'bg-')}`} />
+                        <div className="relative z-10 text-slate-700 dark:text-white/90">
+                          {React.cloneElement(CATEGORY_ICONS[budget.category] as React.ReactElement<any>, { size: 26 })}
                         </div>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-lg text-slate-800 dark:text-white leading-tight mb-1">{budget.category}</h4>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Limit: {currency}{budget.limit.toFixed(0)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <button onClick={() => startEdit(budget)} className="p-2 text-slate-400 hover:text-[#2563EB] transition-colors rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50"><Pencil size={18} /></button>
+                      <button onClick={() => onDeleteBudget(budget.category)} className="p-2 text-slate-400 hover:text-red-500 transition-colors rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50"><Trash2 size={18} /></button>
+                    </div>
+                  </div>
+
+                  {/* Progress Section */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-end text-sm">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-widest mb-1">Spent</span>
+                        <span className="font-black text-slate-900 dark:text-white text-xl leading-none">{currency}{spent.toFixed(2)}</span>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-widest mb-1">Left</span>
+                        <span className={`font-black text-xl leading-none ${remaining < 0 ? 'text-red-500' : 'text-slate-900 dark:text-white'}`}>
+                          {remaining < 0 ? '-' : ''}{currency}{Math.abs(remaining).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Futuristic Bar */}
+                    <div className="relative h-3 w-full bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden shadow-inner">
+                      <div
+                        className={`relative h-full transition-all duration-1000 ease-out rounded-full ${isOverLimit
+                          ? 'bg-gradient-to-r from-red-500 to-rose-600 shadow-[0_0_12px_rgba(239,68,68,0.6)]'
+                          : isNearLimit
+                            ? 'bg-gradient-to-r from-amber-400 to-orange-500 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                            : 'bg-[#2563EB] shadow-[0_0_12px_rgba(37,99,235,0.5)]'
+                          }`}
+                        style={{ width: `${widthPercentage}%` }}
+                      >
+                        <div className="absolute inset-0 bg-white/20 animate-pulse-slow" />
+                      </div>
                     </div>
 
                     {/* Footer Status */}
-                    <div className="flex justify-between items-center pt-1">
-                       <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${statusBg} ${statusColor}`}>
-                          {statusIcon}
-                          {statusText}
-                       </div>
-                       <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{rawPercentage.toFixed(0)}%</span>
+                    <div className="flex justify-between items-center pt-2">
+                      <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide backdrop-blur-sm ${statusBg} ${statusColor} ring-1 ring-inset ring-white/10`}>
+                        {statusIcon}
+                        {statusText}
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 dark:text-slate-500">{rawPercentage.toFixed(0)}%</span>
                     </div>
-                 </div>
+                  </div>
+                </div>
               </GlassCard>
             );
           })}

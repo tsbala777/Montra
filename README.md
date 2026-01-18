@@ -9,3 +9,15 @@ Montra is a comprehensive financial tracking application built with React, TypeS
 - **Goals**: Create and track savings goals.
 - **Investments**: Monitor investment portfolio.
 - **Analytics**: Detailed financial insights.
+
+## Run Locally
+
+**Prerequisites:**  Node.js
+
+1. Install dependencies:
+   `npm install`
+2. Run the app:
+   `npm run dev`
+
+## Deployment Status
+Last updated: 2026-01-18

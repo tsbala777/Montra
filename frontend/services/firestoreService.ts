@@ -147,6 +147,15 @@ export const subscribeToSettings = (userId: string, callback: (settings: UserSet
 
 export const saveTransaction = async (userId: string, transaction: Transaction): Promise<void> => {
     try {
+        if (!navigator.onLine) {
+            console.log('Offline: Queuing transaction', transaction.description);
+            // Dynamic import to avoid circular dependencies if any, though db.ts is clean
+            const { addToQueue } = await import('../lib/db');
+            // We need to store userId with it to know where to save later
+            await addToQueue({ ...transaction, userId });
+            return;
+        }
+
         const transactionRef = doc(db, 'users', userId, 'transactions', transaction.id);
         // Remove undefined values (Firestore doesn't accept undefined)
         const cleanTransaction = Object.fromEntries(

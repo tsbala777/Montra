@@ -4,7 +4,8 @@ import plugin from 'tailwindcss/plugin';
 export default {
   content: [
     "./index.html",
-    "./**/*.{js,ts,jsx,tsx}",
+    "./*.{js,ts,jsx,tsx}",
+    "./{components,pages,contexts,services,lib}/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {

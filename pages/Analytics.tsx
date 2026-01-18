@@ -219,38 +219,51 @@ export const Analytics: React.FC<Props> = ({ transactions, budgets, goals, curre
 
     // Financial health score (0-100)
     const healthScore = useMemo(() => {
-        let score = 50; // Base score
+        // If no transactions at all, score is 0
+        if (filteredTransactions.length === 0) return 0;
 
-        // Savings rate impact (+/- 20)
-        if (savingsRate >= 20) score += 20;
-        else if (savingsRate >= 10) score += 10;
+        let score = 0;
+
+        // Has income (+25 base)
+        if (totalIncome > 0) score += 25;
+
+        // Savings rate impact (+30 max)
+        if (savingsRate >= 30) score += 30;
+        else if (savingsRate >= 20) score += 25;
+        else if (savingsRate >= 10) score += 15;
         else if (savingsRate >= 0) score += 5;
-        else score -= 10;
+        // Negative savings rate gives 0
 
-        // Budget adherence impact (+/- 15)
-        const budgetCategories = budgets.map(b => b.category);
-        let withinBudget = 0;
-        budgetCategories.forEach(cat => {
-            const spent = categoryData.find(c => c.name === cat)?.value || 0;
-            const limit = budgets.find(b => b.category === cat)?.limit || 0;
-            if (spent <= limit) withinBudget++;
-        });
+        // Budget adherence impact (+20 max)
         if (budgets.length > 0) {
+            const budgetCategories = budgets.map(b => b.category);
+            let withinBudget = 0;
+            budgetCategories.forEach(cat => {
+                const spent = categoryData.find(c => c.name === cat)?.value || 0;
+                const limit = budgets.find(b => b.category === cat)?.limit || 0;
+                if (spent <= limit) withinBudget++;
+            });
             const adherenceRate = withinBudget / budgets.length;
-            score += Math.round(adherenceRate * 15);
+            score += Math.round(adherenceRate * 20);
         }
 
-        // Transaction diversity (+5)
-        if (categoryData.length >= 3) score += 5;
+        // Has savings goals (+10)
+        if (goals.length > 0) score += 10;
 
-        // Consistent spending pattern (+10)
+        // Transaction diversity - multiple expense categories (+10)
+        if (categoryData.length >= 5) score += 10;
+        else if (categoryData.length >= 3) score += 5;
+
+        // Consistent spending pattern (+5)
         const spendingVariance = dayOfWeekData.map(d => d.amount);
         const avgSpending = spendingVariance.reduce((a, b) => a + b, 0) / 7;
-        const variance = spendingVariance.reduce((acc, val) => acc + Math.pow(val - avgSpending, 2), 0) / 7;
-        if (variance < avgSpending * 2) score += 10;
+        if (avgSpending > 0) {
+            const variance = spendingVariance.reduce((acc, val) => acc + Math.pow(val - avgSpending, 2), 0) / 7;
+            if (variance < avgSpending * 2) score += 5;
+        }
 
         return Math.max(0, Math.min(100, score));
-    }, [savingsRate, budgets, categoryData, dayOfWeekData]);
+    }, [filteredTransactions, totalIncome, savingsRate, budgets, categoryData, dayOfWeekData, goals]);
 
     const getHealthLabel = (score: number) => {
         if (score >= 80) return { label: 'Excellent', color: 'text-emerald-500', bg: 'bg-emerald-500' };

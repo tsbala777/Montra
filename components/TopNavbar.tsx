@@ -31,9 +31,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ currentView, onNavClick, o
             <div className="flex items-center gap-12">
                 {/* Logo */}
                 <div className="flex items-center gap-3 cursor-pointer" onClick={() => onNavClick('dashboard')}>
-                    <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-indigo-500/20">
-                        M
-                    </div>
+                    <img src="/logo.png" alt="Montra Logo" className="w-12 h-12 object-contain" />
                     <span className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">Montra</span>
                 </div>
 

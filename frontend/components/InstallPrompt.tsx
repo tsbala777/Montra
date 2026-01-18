@@ -3,7 +3,8 @@ import { Download, X, Share } from 'lucide-react';
 
 export const InstallPrompt = () => {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-    const [isVisible, setIsVisible] = useState(false);
+    // FORCE VISIBLE FOR DEBUGGING as requested (user needs to see card)
+    const [isVisible, setIsVisible] = useState(true);
     const [isIOS, setIsIOS] = useState(false);
 
     useEffect(() => {
@@ -58,7 +59,7 @@ export const InstallPrompt = () => {
     if (!isVisible) return null;
 
     return (
-        <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
+        <div className="fixed bottom-4 left-4 right-4 z-[9999] animate-in slide-in-from-bottom-10 fade-in duration-500">
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-5 border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
                 <div className="flex items-start justify-between">
                     <div className="flex gap-4">
@@ -81,7 +82,13 @@ export const InstallPrompt = () => {
                 </div>
 
                 <button
-                    onClick={handleInstallClick}
+                    onClick={() => {
+                        if (deferredPrompt) {
+                            handleInstallClick();
+                        } else {
+                            alert("This is a preview. In a real scenario, this button triggers the browser's install prompt.");
+                        }
+                    }}
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-indigo-500/20 active:scale-95 transform duration-200"
                 >
                     Install Application

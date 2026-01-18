@@ -147,7 +147,6 @@ export const subscribeToSettings = (userId: string, callback: (settings: UserSet
 
 export const saveTransaction = async (userId: string, transaction: Transaction): Promise<void> => {
     try {
-
         const transactionRef = doc(db, 'users', userId, 'transactions', transaction.id);
         // Remove undefined values (Firestore doesn't accept undefined)
         const cleanTransaction = Object.fromEntries(

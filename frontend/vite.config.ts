@@ -14,24 +14,25 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['logo.png', 'pwa-192x192.png', 'pwa-512x512.png'],
+        includeAssets: ['logo.png'],
         manifest: {
-          name: 'Montra - Student Finance',
+          name: 'Montra - Expense Tracker',
           short_name: 'Montra',
-          description: 'Smart Finance Tracking for Students',
+          description: 'Track your expenses clearly and effectively.',
           theme_color: '#ffffff',
+          background_color: '#ffffff',
           display: 'standalone',
           scope: '/',
           start_url: '/',
           orientation: 'portrait',
           icons: [
             {
-              src: 'pwa-192x192.png',
+              src: 'icons/icon-192.png',
               sizes: '192x192',
               type: 'image/png'
             },
             {
-              src: 'pwa-512x512.png',
+              src: 'icons/icon-512.png',
               sizes: '512x512',
               type: 'image/png'
             }

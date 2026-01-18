@@ -10,7 +10,7 @@ import { Plus, Loader2 } from 'lucide-react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { InstallPrompt } from './components/InstallPrompt';
-import { useOnlineStatus } from './hooks/useOnlineStatus';
+import { NetworkStatus } from './components/NetworkStatus';
 import {
   subscribeToTransactions,
   subscribeToSettings,
@@ -58,7 +58,6 @@ const DEFAULT_SETTINGS: UserSettings = {
 // Main App content component (uses auth context)
 const AppContent = () => {
   const { user, loading: authLoading, signOut } = useAuth();
-  const isOnline = useOnlineStatus();
 
   const [currentView, setCurrentView] = useState<View>('login');
   const [isModalOpen, setModalOpen] = useState(false);
@@ -405,13 +404,6 @@ const AppContent = () => {
         />
       )}
 
-      {/* Offline Indicator */}
-      {!isOnline && (
-        <div className="bg-amber-500 text-white text-xs font-bold text-center py-1 absolute top-0 w-full z-50">
-          You are offline. Changes will save locally and sync when online.
-        </div>
-      )}
-
       {/* Main Content Wrapper */}
       <main
         className={`
@@ -492,6 +484,14 @@ const AppContent = () => {
         initialType={modalType}
         initialData={editingTransaction}
       />
+
+      {/* Network Status - Global (Hidden on Desktop Login as it's shown in the card) */}
+      <NetworkStatus
+        className={currentView === 'login'
+          ? "fixed bottom-20 left-1/2 transform -translate-x-1/2 md:hidden"
+          : undefined
+        }
+      />
     </div>
   );
 };
@@ -502,10 +502,9 @@ const App = () => {
     <AuthProvider>
       <ErrorBoundary>
         <AppContent />
-
         <InstallPrompt />
-      </ErrorBoundary >
-    </AuthProvider >
+      </ErrorBoundary>
+    </AuthProvider>
   );
 };
 

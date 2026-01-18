@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { NetworkStatus } from '../NetworkStatus';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, TrendingUp, TrendingDown, Wallet, CreditCard, PiggyBank, ShoppingCart, Car, Coffee, Smartphone } from 'lucide-react';
 
@@ -330,6 +331,9 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                             </p>
                         </div>
                     </div>
+
+                    {/* Network Status - Desktop Only Position */}
+                    <NetworkStatus className="absolute bottom-4 left-4 z-[110]" />
                 </div>
                 {/* RIGHT CARD (Form) */}
                 <div className="w-full md:w-1/2 flex items-center justify-center p-8 relative bg-white dark:bg-[#0B1120] overflow-hidden">

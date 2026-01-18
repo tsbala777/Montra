@@ -9,6 +9,7 @@ import { TopNavbar } from './components/TopNavbar';
 import { Plus, Loader2 } from 'lucide-react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { InstallPrompt } from './components/InstallPrompt';
 import {
   subscribeToTransactions,
   subscribeToSettings,
@@ -492,6 +493,7 @@ const App = () => {
     <AuthProvider>
       <ErrorBoundary>
         <AppContent />
+        <InstallPrompt />
       </ErrorBoundary>
     </AuthProvider>
   );

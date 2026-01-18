@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { UserSettings } from '../types';
 import { GlassInput, GlassSelect } from '../components/ui/Glass';
-import { Download, Trash2, Moon, Sun, Laptop, LogOut, ChevronRight, Camera, Mail, Phone, User, Pencil } from 'lucide-react';
+import { Download, Trash2, Moon, Sun, Laptop, LogOut, ChevronRight, Camera, Mail, Phone, User, Pencil, Calendar, Tag, Activity } from 'lucide-react';
 import { MagicBentoGrid, MagicBentoCard } from '../components/MagicBento';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -374,39 +374,42 @@ export const Settings: React.FC<Props> = ({ settings, onUpdateSettings, onResetD
           className="bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 shadow-sm"
         >
           <div className="mt-4 space-y-3">
-            <div className="flex items-center justify-between p-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600 dark:text-indigo-400">
-                    <path d="M12 20V10" />
-                    <path d="M18 20V4" />
-                    <path d="M6 20v-4" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">App Version</p>
-                  <p className="text-lg font-bold text-slate-900 dark:text-white">v1.0.0</p>
+            {[
+              {
+                title: 'App Version',
+                value: 'v1.0.0',
+                containerClass: 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-500/20',
+                iconBgClass: 'bg-indigo-100 dark:bg-indigo-500/20',
+                iconColorClass: 'text-indigo-600 dark:text-indigo-400'
+              },
+              {
+                title: 'Member Since',
+                value: user?.metadata.creationTime
+                  ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                  : 'Jan 2026',
+                containerClass: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20',
+                iconBgClass: 'bg-emerald-100 dark:bg-emerald-500/20',
+                iconColorClass: 'text-emerald-600 dark:text-emerald-400'
+              }
+            ].map((stat, index) => (
+              <div key={index} className={`flex items-center justify-between p-3 rounded-xl border ${stat.containerClass}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.iconBgClass}`}>
+                    {stat.title === 'App Version' ? (
+                      <Tag size={20} className={stat.iconColorClass} />
+                    ) : stat.title === 'Member Since' ? (
+                      <Calendar size={20} className={stat.iconColorClass} />
+                    ) : (
+                      <Activity size={20} className={stat.iconColorClass} />
+                    )}
+                  </div>
+                  <div>
+                    <p className={`text-xs font-medium ${stat.iconColorClass}`}>{stat.title}</p>
+                    <p className="text-lg font-bold text-slate-900 dark:text-white">{stat.value}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600 dark:text-emerald-400">
-                    <line x1="12" y1="1" x2="12" y2="23" />
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Member Since</p>
-                  <p className="text-lg font-bold text-slate-900 dark:text-white">
-                    {user?.metadata.creationTime
-                      ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-                      : 'Jan 2026'}
-                  </p>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </MagicBentoCard>
 

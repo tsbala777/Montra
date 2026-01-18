@@ -61,10 +61,10 @@ const floatAnimation = (delay: number, duration: number) => ({
 
 const MonthlyExpenseCard = () => (
     <motion.div
-        {...floatAnimation(0, 30)}
-        style={{ top: '5%' }}
+        {...floatAnimation(0, 12)}
+        style={{ top: '12%' }}
         whileHover={{ scale: 0.9, zIndex: 40, transition: { duration: 0.3 } }}
-        className="auth-card absolute left-0 scale-[0.65] bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-2xl w-80"
+        className="auth-card absolute left-0 scale-[0.55] bg-white/10 border border-white/20 p-6 rounded-2xl shadow-2xl w-80"
     >
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -98,10 +98,10 @@ const MonthlyExpenseCard = () => (
 
 const BudgetCategoriesCard = () => (
     <motion.div
-        {...floatAnimation(6, 32)}
-        style={{ top: '25%' }}
+        {...floatAnimation(3, 14)}
+        style={{ top: '30%' }}
         whileHover={{ scale: 0.9, zIndex: 40, transition: { duration: 0.3 } }}
-        className="auth-card absolute left-0 scale-[0.75] bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-2xl w-72"
+        className="auth-card absolute left-0 scale-[0.65] bg-white/10 border border-white/20 p-6 rounded-2xl shadow-2xl w-72"
     >
         <div className="flex items-center gap-2 mb-4">
             <div className="p-2 bg-gradient-to-br from-blue-400/30 to-indigo-500/30 rounded-xl">
@@ -138,10 +138,10 @@ const BudgetCategoriesCard = () => (
 
 const TransactionCard = () => (
     <motion.div
-        {...floatAnimation(12, 28)}
-        style={{ top: '45%' }}
+        {...floatAnimation(6, 11)}
+        style={{ top: '48%' }}
         whileHover={{ scale: 0.9, zIndex: 40, transition: { duration: 0.3 } }}
-        className="auth-card absolute left-0 scale-[0.7] bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-2xl shadow-2xl w-72"
+        className="auth-card absolute left-0 scale-[0.6] bg-white/10 border border-white/20 p-5 rounded-2xl shadow-2xl w-72"
     >
         <div className="flex items-center gap-2 mb-4">
             <div className="p-2 bg-gradient-to-br from-cyan-400/30 to-sky-500/30 rounded-xl">
@@ -176,10 +176,10 @@ const TransactionCard = () => (
 
 const IncomeExpenseChart = () => (
     <motion.div
-        {...floatAnimation(18, 35)}
-        style={{ top: '65%' }}
+        {...floatAnimation(9, 15)}
+        style={{ top: '66%' }}
         whileHover={{ scale: 0.9, zIndex: 40, transition: { duration: 0.3 } }}
-        className="auth-card absolute left-0 scale-[0.6] bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-2xl shadow-2xl w-52"
+        className="auth-card absolute left-0 scale-[0.5] bg-white/10 border border-white/20 p-5 rounded-2xl shadow-2xl w-52"
     >
         <p className="text-xs text-white/60 font-medium mb-3 text-center">Income vs Expense</p>
         <div className="flex items-end justify-center gap-3 h-24">
@@ -197,10 +197,10 @@ const IncomeExpenseChart = () => (
 
 const InvestmentCard = () => (
     <motion.div
-        {...floatAnimation(24, 30)}
-        style={{ top: '80%' }}
+        {...floatAnimation(12, 13)}
+        style={{ top: '82%' }}
         whileHover={{ scale: 0.9, zIndex: 40, transition: { duration: 0.3 } }}
-        className="auth-card absolute left-0 scale-[0.55] bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-2xl shadow-2xl w-60"
+        className="auth-card absolute left-0 scale-[0.45] bg-white/10 border border-white/20 p-5 rounded-2xl shadow-2xl w-60"
     >
         <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-gradient-to-br from-amber-400/30 to-orange-500/30 rounded-xl">
@@ -285,7 +285,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 md:p-6 overflow-hidden font-sans">
+        <div className="h-screen w-full fixed inset-0 flex flex-col items-center justify-center p-4 md:p-6 overflow-hidden font-sans">
 
 
 
@@ -293,7 +293,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
             {/* <MobileHero /> - Removed as per user request */}
 
             {/* CARD CONTAINER */}
-            <div className="w-full max-w-5xl md:h-auto md:min-h-[600px] flex rounded-3xl md:rounded-[2.5rem] overflow-hidden z-10 transition-all duration-300 shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-[#0B1120]">
+            <div className="w-full max-w-[900px] h-[600px] flex rounded-3xl md:rounded-[2rem] overflow-hidden z-10 transition-all duration-300 shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-[#0B1120]">
 
                 {/* LEFT CARD (Visuals) - Hidden on mobile */}
                 <div className="hidden md:block w-1/2 relative bg-blue-950 border-r border-white/10 overflow-hidden">
@@ -305,68 +305,77 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                     <div className="absolute top-20 left-20 w-80 h-80 bg-blue-600/40 rounded-full blur-[100px] animate-pulse"></div>
                     <div className="absolute bottom-20 right-20 w-64 h-64 bg-indigo-500/40 rounded-full blur-[100px] animate-pulse delay-1000"></div>
 
-                    {/* Floating Feature Cards */}
-                    <MonthlyExpenseCard />
-                    <BudgetCategoriesCard />
-                    <TransactionCard />
-                    <IncomeExpenseChart />
-                    <InvestmentCard />
+                    {/* Floating Feature Cards - Scaled factor for new size */}
+                    <div className="scale-[0.75] origin-top-left w-full h-full relative">
+                        <MonthlyExpenseCard />
+                        <BudgetCategoriesCard />
+                        <TransactionCard />
+                        <IncomeExpenseChart />
+                        <InvestmentCard />
+                    </div>
 
                     {/* Tagline */}
                     {/* Tagline */}
                     <div className="absolute bottom-10 left-0 w-full z-[100] flex justify-center px-6">
-                        <div className="max-w-md w-full bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-xl shadow-blue-900/20 text-center">
-                            <h2 className="text-3xl font-bold text-white mb-3 tracking-tight leading-tight">
+                        <div className="max-w-md w-full bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/10 shadow-xl shadow-blue-900/20 text-center">
+                            <h2 className="text-xl font-bold text-white mb-2 tracking-tight leading-tight">
                                 Track every rupee.
                                 <br />
                                 <span className="bg-gradient-to-r from-blue-200 to-indigo-200 bg-clip-text text-transparent">
                                     Control your future.
                                 </span>
                             </h2>
-                            <p className="text-blue-100/80 text-sm font-light leading-relaxed">
-                                Smart budgeting, expense tracking, and financial insights — all in one beautiful app.
+                            <p className="text-blue-100/80 text-xs font-light leading-relaxed">
+                                Smart budgeting, expense tracking, and financial insights - all in one beautiful app.
                             </p>
                         </div>
                     </div>
                 </div>
-
                 {/* RIGHT CARD (Form) */}
-                <div className="w-full md:w-1/2 flex items-center justify-center p-6 lg:p-8 relative bg-white dark:bg-[#0B1120] overflow-y-auto custom-scrollbar">
-                    <div className="w-full max-w-[420px] space-y-6 my-auto">
+                <div className="w-full md:w-1/2 flex items-center justify-center p-8 relative bg-white dark:bg-[#0B1120] overflow-hidden">
 
-                        {/* Logo for desktop and mobile */}
-                        <div className="flex items-center justify-center md:justify-start gap-4 mb-2">
-                            <img src="/logo.png" alt="Montra Logo" className="w-24 h-24 object-contain" />
-                            <span className="text-3xl font-bold text-slate-900 dark:text-white">Montra</span>
-                        </div>
+                    {/* Background Watermark Logo */}
+                    <img
+                        src="/logo.png"
+                        alt=""
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 object-contain opacity-[0.08] dark:opacity-[0.1] pointer-events-none select-none"
+                    />
 
-                        <div className="text-center md:text-left space-y-2">
-                            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+                    {/* Logo - Positioned top left */}
+                    <div className="absolute top-8 left-8 flex items-center gap-2">
+                        <img src="/logo.png" alt="Montra Logo" className="w-10 h-10 object-contain" />
+                        <span className="text-2xl font-bold text-slate-900 dark:text-white">Montra</span>
+                    </div>
+
+                    <div className="w-full max-w-sm space-y-4 my-auto pt-12">
+
+                        <div className="text-center md:text-left space-y-1">
+                            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                                 {displayTitle}
                             </h1>
-                            <p className="text-slate-500 dark:text-slate-400 text-base">
+                            <p className="text-slate-500 dark:text-slate-400 text-xs">
                                 {displayDescription}
                             </p>
                         </div>
 
-                        <form className="space-y-4" onSubmit={onSignIn}>
+                        <form className="space-y-3" onSubmit={onSignIn}>
                             {/* Name Input (Only for Signup) */}
                             {mode === 'signup' && (
-                                <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                <div className="space-y-1.5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
                                         Full Name
                                     </label>
                                     <input
                                         name="name"
                                         type="text"
                                         placeholder="Enter your full name"
-                                        className="auth-input w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 font-medium text-sm"
+                                        className="auth-input w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 font-medium text-xs"
                                     />
                                 </div>
                             )}
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
                                     Email Address
                                 </label>
                                 <input
@@ -374,12 +383,12 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                                     type="email"
                                     autoComplete="email"
                                     placeholder="name@example.com"
-                                    className="auth-input w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 font-medium text-sm"
+                                    className="auth-input w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 font-medium text-xs"
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
                                     Password
                                 </label>
                                 <div className="relative">
@@ -388,18 +397,18 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                                         type={showPassword ? 'text' : 'password'}
                                         autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                                         placeholder="••••••••"
-                                        className="auth-input w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 pr-12 font-medium text-sm"
+                                        className="auth-input w-full bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 pr-12 font-medium text-xs"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
                                     >
-                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                     </button>
                                 </div>
                                 {mode === 'signup' && (
-                                    <p className="text-xs text-slate-500">Must be at least 8 characters</p>
+                                    <p className="text-[10px] text-slate-500">Must be at least 8 characters</p>
                                 )}
                             </div>
 
@@ -423,30 +432,30 @@ export const SignInPage: React.FC<SignInPageProps> = ({
 
                             <button
                                 type="submit"
-                                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all duration-200 text-base"
+                                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2 rounded-lg shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all duration-200 text-xs"
                             >
                                 {mode === 'login' ? 'Sign In' : 'Create Account'}
                             </button>
                         </form>
 
-                        <div className="relative">
+                        <div className="relative pt-1">
                             <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t border-slate-200 dark:border-zinc-800"></div>
                             </div>
                             <div className="relative flex justify-center text-xs uppercase tracking-wide font-medium">
-                                <span className="px-4 bg-white dark:bg-zinc-900 text-slate-400">{mode === 'login' ? 'or continue with' : 'or sign up with'}</span>
+                                <span className="px-3 bg-white dark:bg-zinc-900 text-slate-400">{mode === 'login' ? 'or continue with' : 'or sign up with'}</span>
                             </div>
                         </div>
 
                         <button
                             onClick={onGoogleSignIn}
-                            className="w-full bg-white dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-200 font-medium py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800 hover:border-slate-300 dark:hover:border-zinc-600 active:bg-slate-100 transition-all flex items-center justify-center gap-3 text-sm"
+                            className="w-full bg-white dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-200 font-medium py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800 hover:border-slate-300 dark:hover:border-zinc-600 active:bg-slate-100 transition-all flex items-center justify-center gap-2 text-xs"
                         >
                             <GoogleIcon />
                             <span>Continue with Google</span>
                         </button>
 
-                        <p className="text-center text-sm text-slate-600 dark:text-slate-400 pt-2">
+                        <p className="text-center text-xs text-slate-600 dark:text-slate-400 pt-1">
                             {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
                             <button
                                 onClick={(e) => {

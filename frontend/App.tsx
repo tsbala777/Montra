@@ -486,7 +486,7 @@ const AppContent = () => {
       >
 
         {/* Content Container with Top Padding for Navbar */}
-        <div className={`h-full overflow-y-auto px-4 pb-48 md:px-8 md:pb-8 custom-scrollbar ${showNav ? 'pt-24 md:pt-28' : 'pt-6 md:pt-8'}`}>
+        <div className={`h-full overflow-y-auto px-4 pb-48 md:px-8 md:pb-8 custom-scrollbar ${showNav ? 'pt-32 md:pt-28' : 'pt-6 md:pt-8'}`}>
           <div className="max-w-7xl mx-auto">
             {/* Keyed container for page transitions */}
             <div key={currentView} className="animate-page-enter">
